@@ -1,0 +1,25 @@
+{
+  "cmake.configureOnOpen": false,
+  "cmake.statusbar.advanced": {
+    "debug" : {
+      "visibility": "hidden"
+              },    "launch" : {
+      "visibility": "hidden"
+               },
+    "build" : {
+      "visibility": "hidden"
+               },
+    "buildTarget" : {
+      "visibility": "hidden"
+               },
+    },
+    "files.associations": {
+      "pio.h": "c",
+      "stdlib.h": "c",
+      "joybus.h": "c",
+      "n64_definitions.h": "c",
+      "phobri64.h": "c",
+      "multicore.h": "c",
+      "report.h": "c"
+    },
+}
