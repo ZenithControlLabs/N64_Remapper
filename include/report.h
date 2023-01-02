@@ -4,39 +4,39 @@
 #include "Phobri64.h"
 
 enum N64Command {
-    PROBE = 0x00,
-    RESET = 0xFF,
-    POLL = 0x01,
-    READ_EXPANSION_BUS = 0x02,
-    WRITE_EXPANSION_BUS = 0x03,
+  PROBE = 0x00,
+  RESET = 0xFF,
+  POLL = 0x01,
+  READ_EXPANSION_BUS = 0x02,
+  WRITE_EXPANSION_BUS = 0x03,
 };
 
 typedef struct __attribute__((packed)) {
-    bool dpad_right : 1;
-    bool dpad_left : 1;
-    bool dpad_down : 1;
-    bool dpad_up : 1;
-    bool start : 1;
-    bool z : 1;
-    bool b : 1;
-    bool a : 1;
+  bool dpad_right : 1;
+  bool dpad_left : 1;
+  bool dpad_down : 1;
+  bool dpad_up : 1;
+  bool start : 1;
+  bool z : 1;
+  bool b : 1;
+  bool a : 1;
 
-    bool c_right : 1;
-    bool c_left : 1;
-    bool c_down : 1;
-    bool c_up : 1;
-    bool r : 1;
-    bool l : 1;
-    uint8_t reserved1 : 1;
-    uint8_t reserved0 : 1;
+  bool c_right : 1;
+  bool c_left : 1;
+  bool c_down : 1;
+  bool c_up : 1;
+  bool r : 1;
+  bool l : 1;
+  uint8_t reserved1 : 1;
+  uint8_t reserved0 : 1;
 
-    uint8_t stick_x;
-    uint8_t stick_y;
+  uint8_t stick_x;
+  uint8_t stick_y;
 } n64_report_t;
 
 typedef struct __attribute__((packed)) {
-    uint16_t device;
-    uint8_t status;
+  uint16_t device;
+  uint8_t status;
 } n64_status_t;
 
 static const n64_report_t default_n64_report = {

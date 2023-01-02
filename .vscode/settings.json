@@ -20,6 +20,7 @@
       "n64_definitions.h": "c",
       "phobri64.h": "c",
       "multicore.h": "c",
-      "report.h": "c"
+      "report.h": "c",
+      "tusb.h": "c"
     },
 }
