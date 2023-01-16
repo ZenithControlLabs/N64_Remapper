@@ -28,6 +28,9 @@ add_executable(Phobri64
   src/report.c
   src/usb.c
   src/usb_descriptors.c
+  src/control.c
+  src/stick.c
+  src/read_hardware.c
 )
 
 pico_generate_pio_header(Phobri64 ${CMAKE_CURRENT_LIST_DIR}/src/joybus.pio)
@@ -61,5 +64,7 @@ target_include_directories(Phobri64 PRIVATE
 # Add any user requested libraries
 target_link_libraries(Phobri64
         )
+
+add_compile_options(-finline-functions)
 
 pico_add_extra_outputs(Phobri64)

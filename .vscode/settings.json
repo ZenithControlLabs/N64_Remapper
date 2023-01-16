@@ -21,6 +21,11 @@
       "phobri64.h": "c",
       "multicore.h": "c",
       "report.h": "c",
-      "tusb.h": "c"
+      "tusb.h": "c",
+      "storage.h": "c",
+      "stdio.h": "c",
+      "math.h": "c",
+      "read_hardware.h": "c",
+      "usb.h": "c"
     },
 }

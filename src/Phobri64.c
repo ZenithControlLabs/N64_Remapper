@@ -1,8 +1,10 @@
 #include "Phobri64.h"
 
 void second_core() {
+  init_state_machine();
+  create_default_n64_report();
   while (true) {
-    create_default_n64_report();
+    control_state_machine();
     sleep_us(100);
   }
 }
