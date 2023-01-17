@@ -45,57 +45,40 @@ void clean_cal_points(const float raw_cal_points_x[], const float raw_cal_points
 		cleaned_points_y[i+1] = raw_cal_points_y[i*2+1];
 	}
 
-	// remove the largest and smallest two origin values to remove outliers
+	// remove the largest and smallest origin values to remove outliers
 	// first, find their indices
 
 	int smallestX = 0;
-	int smallX = 0;
-	int largeX = 0;
 	int largestX = 0;
 	int smallestY = 0;
-	int smallY = 0;
-	int largeY = 0;
 	int largestY = 0;
 	for (int i = 0; i < NUM_NOTCHES; i++){
-		if (raw_cal_points_x[i*2] < raw_cal_points_x[smallestX]){// if it's the new smallest
-			smallX = smallestX; // shuffle the old smallest to small
-			smallestX = i*2; // record the new smallest index
-		} else if (raw_cal_points_x[i*2] < raw_cal_points_x[smallX]){// if it's the new second-smallest
-			smallX = i*2;// record the new small index
+		if (raw_cal_points_x[i*2] < raw_cal_points_x[smallestX]){
+			// record the new smallest index
+			smallestX = i*2;
+		} else if (raw_cal_points_x[i*2] > raw_cal_points_x[largestX]){
+			// record the new largest index
+			largestX = i*2;
 		}
-		if (raw_cal_points_x[i*2] > raw_cal_points_x[largestX]){// if it's the new largest
-			largeX = largestX;// shuffle the old largest to large
-			largestX = i*2;// record the new largest index
-		} else if (raw_cal_points_x[i*2] > raw_cal_points_x[largeX]){// if it's the new second-largest
-			largeX = i*2;// record the new large index
-		}
+
 		if (raw_cal_points_y[i*2] < raw_cal_points_y[smallestY]){
-			smallY = smallestY;
+			// record the new smallest index
 			smallestY = i*2;
-		} else if (raw_cal_points_y[i*2] < raw_cal_points_y[smallY]){
-			smallY = i*2;
-		}
-		if (raw_cal_points_y[i*2] > raw_cal_points_y[largestY]){
-			largeY = largestY;
+		} else if (raw_cal_points_y[i*2] > raw_cal_points_y[largestY]){
+			// record the new largest index
 			largestY = i*2;
-		} else if (raw_cal_points_y[i*2] > raw_cal_points_y[largeY]){
-			largeY = i*2;
 		}
 	}
 	// subtract the smallest and largest values
 	cleaned_points_x[0] -= raw_cal_points_x[smallestX];
-	cleaned_points_x[0] -= raw_cal_points_x[smallX];
-	cleaned_points_x[0] -= raw_cal_points_x[largeX];
 	cleaned_points_x[0] -= raw_cal_points_x[largestX];
 	cleaned_points_y[0] -= raw_cal_points_y[smallestY];
-	cleaned_points_y[0] -= raw_cal_points_y[smallY];
-	cleaned_points_y[0] -= raw_cal_points_y[largeY];
 	cleaned_points_y[0] -= raw_cal_points_y[largestY];
 
 	//divide by the total number of calibration steps/2 to get the average origin value
 	//except it's minus 4 steps since we removed outliers
-	cleaned_points_x[0] = cleaned_points_x[0]/((float)NUM_NOTCHES-4);
-	cleaned_points_y[0] = cleaned_points_y[0]/((float)NUM_NOTCHES-4);
+	cleaned_points_x[0] = cleaned_points_x[0]/((float)NUM_NOTCHES-2);
+	cleaned_points_y[0] = cleaned_points_y[0]/((float)NUM_NOTCHES-2);
 }
 
 void linearize_cal(const float cleaned_points_x[], const float cleaned_points_y[], float linearized_points_x[], float linearized_points_y[], stick_params_t *stick_params) {

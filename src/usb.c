@@ -2,6 +2,8 @@
 #include "bsp/board.h"
 #include "usb_descriptors.h"
 
+bool thingy = false; // For testing 
+
 //--------------------------------------------------------------------+
 // Device callbacks
 //--------------------------------------------------------------------+
@@ -42,13 +44,12 @@ uint16_t tud_hid_get_report_cb(uint8_t instance, uint8_t report_id,
                                hid_report_type_t report_type, uint8_t *buffer,
                                uint16_t bufsize) {
   // TODO not Implemented
-  (void)instance;
   (void)report_type;
 
   uint16_t resp_len;
 
   switch (report_id) {
-    case CMD_GET_STATE: resp_len = return_state(buffer, bufsize); return resp_len; break;
+    case CMD_GET_STATE: resp_len = return_state(buffer, bufsize, instance); return resp_len; break;
     default: return 0; // do nothing, didnt recognize
   }
 
@@ -64,6 +65,7 @@ void tud_hid_set_report_cb(uint8_t instance, uint8_t report_id,
   (void)bufsize;
 
   switch (report_id) {
+    case 0x00: thingy = !thingy; gpio_put(PICO_DEFAULT_LED_PIN, thingy); break;
     case CMD_START_CALIBRATION: start_calibration(); break;
     case CMD_SET_NOTCH_VALUE: return;
   }
