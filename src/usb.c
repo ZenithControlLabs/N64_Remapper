@@ -46,14 +46,7 @@ uint16_t tud_hid_get_report_cb(uint8_t instance, uint8_t report_id,
   // TODO not Implemented
   (void)report_type;
 
-  uint16_t resp_len;
-
-  switch (report_id) {
-    case CMD_GET_STATE: resp_len = return_state(buffer, bufsize, instance); return resp_len; break;
-    default: return 0; // do nothing, didnt recognize
-  }
-
-  return resp_len;
+  return send_state(report_id, buffer, bufsize);
 }
 
 void tud_hid_set_report_cb(uint8_t instance, uint8_t report_id,
@@ -103,8 +96,8 @@ hid_gamepad_report_t convertN64toHIDReport() {
   uint16_t buttons = (_report.a) << 0 + (_report.b) << 1 + (_report.z) << 2;
 
   // multiply analog values by 257 (from HayBox)
-  hid_gamepad_report_t report = {.x = _report.stick_x * 257,
-                                 .y = _report.stick_y * 257,
+  hid_gamepad_report_t report = {.x = _report.stick_x,
+                                 .y = _report.stick_y,
                                  .z = 0,
                                  .rz = 0,
                                  .rx = 0,
@@ -131,6 +124,14 @@ static void send_hid_report() {
   tud_hid_report(REPORT_ID_GAMEPAD, &report, sizeof(report));
 
   // has_gamepad_key = true;
+}
+
+uint16_t send_custom_report(uint8_t cmd) {
+  // if hid is not ready yet let the consumer know
+  if (!tud_hid_ready())
+    return -1;
+
+  tud_hid_report(cmd, NULL, 0);
 }
 
 // Every 10ms, we will sent 1 report for each HID profile (keyboard, mouse etc

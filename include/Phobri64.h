@@ -3,6 +3,7 @@
 
 // System includes
 #include <hardware/pio.h>
+#include <hardware/spi.h>
 #include <pico/multicore.h>
 #include <pico/stdlib.h>
 #include <pico/time.h>
@@ -20,6 +21,6 @@
 #include "read_hardware.h" // Interfacing with the hardware on board (ADCs, GPIO)
 
 // Hardware include - uncomment these based on the RP2040 board you are using!
-#include "hw/pico_debug.h"
+#include "hw/phob2_debug.h"
 
 #endif /* PHOBRI64_H_ */

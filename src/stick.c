@@ -81,6 +81,10 @@ void clean_cal_points(const float raw_cal_points_x[], const float raw_cal_points
 	cleaned_points_y[0] = cleaned_points_y[0]/((float)NUM_NOTCHES-2);
 }
 
+/*
+this method takes the cleaned (i.e. only one neutral cal point) points and generates the linearization coefficients
+it then linearizes the provided calibration points 
+*/
 void linearize_cal(const float cleaned_points_x[], const float cleaned_points_y[], float linearized_points_x[], float linearized_points_y[], stick_params_t *stick_params) {
 
 	// for readability
@@ -120,8 +124,146 @@ void linearize_cal(const float cleaned_points_x[], const float cleaned_points_y[
 		stick_params->fit_coeffs_x[i] = temp_coeffs_y[i];
 	}
 
-	for (int i = 0; i < NUM_NOTCHES; i++) {
+	for (int i = 0; i <= NUM_NOTCHES; i++) {
 		out_x[i] = linearize(in_x[i], stick_params->fit_coeffs_x);
 		out_y[i] = linearize(in_y[i], stick_params->fit_coeffs_y);
 	}
 }
+
+/*
+//Self-explanatory.
+void inverse(const float in[3][3], float (&out)[3][3])
+{
+	float det = in[0][0] * (in[1][1]*in[2][2] - in[2][1]*in[1][2]) -
+	            in[0][1] * (in[1][0]*in[2][2] - in[1][2]*in[2][0]) +
+	            in[0][2] * (in[1][0]*in[2][1] - in[1][1]*in[2][0]);
+	float invdet = 1 / det;
+
+	out[0][0] = (in[1][1]*in[2][2] - in[2][1]*in[1][2]) * invdet;
+	out[0][1] = (in[0][2]*in[2][1] - in[0][1]*in[2][2]) * invdet;
+	out[0][2] = (in[0][1]*in[1][2] - in[0][2]*in[1][1]) * invdet;
+	out[1][0] = (in[1][2]*in[2][0] - in[1][0]*in[2][2]) * invdet;
+	out[1][1] = (in[0][0]*in[2][2] - in[0][2]*in[2][0]) * invdet;
+	out[1][2] = (in[1][0]*in[0][2] - in[0][0]*in[1][2]) * invdet;
+	out[2][0] = (in[1][0]*in[2][1] - in[2][0]*in[1][1]) * invdet;
+	out[2][1] = (in[2][0]*in[0][1] - in[0][0]*in[2][1]) * invdet;
+	out[2][2] = (in[0][0]*in[1][1] - in[1][0]*in[0][1]) * invdet;
+}
+
+//Self-explanatory.
+void matrixMatrixMult(const float left[3][3], const float right[3][3], float (&output)[3][3])
+{
+	for (int i = 0; i < 3; i++)
+	{
+		for (int j = 0; j < 3; j++)
+		{
+			output[i][j] = 0;
+			for (int k = 0; k < 3; k++)
+			{
+				output[i][j] += left[i][k] * right[k][j];
+			}
+		}
+	}
+}
+
+void print_mtx(const float matrix[3][3]){
+	int i, j, nrow, ncol;
+	nrow = 3;
+	ncol = 3;
+	printf("\n");
+	for (i=0; i<nrow; i++)
+	{
+		for (j=0; j<ncol; j++)
+		{
+			printf(matrix[i][j], 6);   // print 6 decimal places
+			printf(", ");
+		}
+		printf("\n");
+	}
+	printf("\n");
+};
+
+void notchCalibrate(const float in_points_x[], const float in_points_y[], float notch_points_x[], float notch_points_y[], stick_params_t *stick_params) {
+
+	for(int i = 1; i <= NUM_NOTCHES; i++){
+		printf("calibration region %d\n", i);
+
+		float pointsIn[3][3];
+		float pointsOut[3][3];
+
+		if(i == (regions)){
+			printf("final region\n");
+			pointsIn[0][0] = in_points_x[0];
+			pointsIn[0][1] = in_points_x[i];
+			pointsIn[0][2] = in_points_x[1];
+			pointsIn[1][0] = in_points_y[0];
+			pointsIn[1][1] = in_points_y[i];
+			pointsIn[1][2] = in_points_y[1];
+			pointsIn[2][0] = 1;
+			pointsIn[2][1] = 1;
+			pointsIn[2][2] = 1;
+			pointsOut[0][0] = notch_points_x[0];
+			pointsOut[0][1] = notch_points_x[i];
+			pointsOut[0][2] = notch_points_x[1];
+			pointsOut[1][0] = notch_points_y[0];
+			pointsOut[1][1] = notch_points_y[i];
+			pointsOut[1][2] = notch_points_y[1];
+			pointsOut[2][0] = 1;
+			pointsOut[2][1] = 1;
+			pointsOut[2][2] = 1;
+		}
+		else{
+			pointsIn[0][0] = in_points_x[0];
+			pointsIn[0][1] = in_points_x[i];
+			pointsIn[0][2] = in_points_x[i+1];
+			pointsIn[1][0] = in_points_y[0];
+			pointsIn[1][1] = in_points_y[i];
+			pointsIn[1][2] = in_points_y[i+1];
+			pointsIn[2][0] = 1;
+			pointsIn[2][1] = 1;
+			pointsIn[2][2] = 1;
+			pointsOut[0][0] = notch_points_x[0];
+			pointsOut[0][1] = notch_points_x[i];
+			pointsOut[0][2] = notch_points_x[i+1];
+			pointsOut[1][0] = notch_points_y[0];
+			pointsOut[1][1] = notch_points_y[i];
+			pointsOut[1][2] = notch_points_y[i+1];
+			pointsOut[2][0] = 1;
+			pointsOut[2][1] = 1;
+			pointsOut[2][2] = 1;
+		}
+
+		printf("In points:\n");
+		print_mtx(pointsIn);
+		debug_println("Out points:");
+		print_mtx(pointsOut);
+
+		float temp[3][3];
+		inverse(pointsIn, temp);
+
+		float A[3][3];
+		matrixMatrixMult(pointsOut, temp, A);
+
+		printf("The transform matrix is:\n");
+		print_mtx(A);
+
+		printf("The affine transform coefficients for this region are:\n");
+
+		for(int j = 0; j <2;j++){
+			for(int k = 0; k<2;k++){
+				stickParams.affineCoeffs[i-1][j*2+k] = A[j][k];
+				debug_print(stickParams.affineCoeffs[i-1][j*2+k]);
+				debug_print(",");
+			}
+		}
+
+		printf("\nThe angle defining this  regions is:\n");
+		stickParams.boundaryAngles[i-1] = atan2f((yIn[i]-yIn[0]),(xIn[i]-xIn[0]));
+		//unwrap the angles so that the first has the smallest value
+		if(stickParams.boundaryAngles[i-1] < stickParams.boundaryAngles[0]){
+			stickParams.boundaryAngles[i-1] += M_PI*2;
+		}
+		printf("%d\n", stickParams.boundaryAngles[i-1]);
+	}
+};
+*/

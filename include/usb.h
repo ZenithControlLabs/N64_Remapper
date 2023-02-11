@@ -26,6 +26,8 @@ hid_gamepad_report_t convertN64toHIDReport();
 
 static void send_hid_report();
 
+uint16_t send_custom_report(uint8_t cmd);
+
 void hid_task(void);
 
 void usb_init_comms();

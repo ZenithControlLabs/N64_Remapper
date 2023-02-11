@@ -4,6 +4,8 @@ void second_core() {
   init_state_machine();
   create_default_n64_report();
   stdio_init_all();
+
+  printf("Phobri64 Initialization\n");
   while (true) {
     control_state_machine();
     sleep_us(100);
