@@ -5,6 +5,7 @@
 #include <hardware/pio.h>
 #include <hardware/spi.h>
 #include <pico/multicore.h>
+#include <pico/bootrom.h>
 #include <pico/stdlib.h>
 #include <pico/time.h>
 #include <pico/util/queue.h>

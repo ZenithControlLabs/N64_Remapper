@@ -11,15 +11,16 @@ int __time_critical_func(readExtAdc)(bool isXaxis) {
 	//                     |||||11
 	//                     ||||||10  byte 1   byte 2 (when read out)
 	//                     |||||||9  87654321 0_______
+    uint8_t configBits;
     if (isXaxis) {
-        uint8_t configBits = 0b11010000;
+        configBits = 0b11010000;
     } else {
-        uint8_t configBits = 0b11110000; //channel 1
+        configBits = 0b11110000; //channel 1
     }
 	uint8_t buf[3];
 	gpio_put(STICK_SPI_CS, 0);
 
-	spi_read_blocking(spi0, *configBits, buf, 3);
+	spi_read_blocking(spi0, configBits, buf, 3);
 	uint16_t tempValue = (((buf[0] & 0b00000111) << 9) | buf[1] << 1 | buf[2] >> 7);
 
 	gpio_put(STICK_SPI_CS, 1);
@@ -42,29 +43,23 @@ static inline void init_btn_pin(uint pin) {
 }
 
 void init_hardware() {
-    /*
+    
     init_btn_pin(BTN_A_PIN);
     init_btn_pin(BTN_B_PIN);
     init_btn_pin(BTN_START_PIN);
     init_btn_pin(BTN_R_PIN);
     init_btn_pin(BTN_L_PIN);
-    init_btn_pin(BTN_ZR_PIN);
+    //init_btn_pin(BTN_ZR_PIN);
     init_btn_pin(BTN_ZL_PIN);
     init_btn_pin(BTN_CR_PIN);
     init_btn_pin(BTN_CL_PIN);
-    init_btn_pin(BTN_CD_PIN);
-    init_btn_pin(BTN_CU_PIN);
+    //init_btn_pin(BTN_CD_PIN);
+    //init_btn_pin(BTN_CU_PIN);
     init_btn_pin(BTN_DR_PIN);
     init_btn_pin(BTN_DL_PIN);
     init_btn_pin(BTN_DD_PIN);
     init_btn_pin(BTN_DU_PIN);
 
-    adc_init(STICK_X_ADC);
-    adc_init(STICK_Y_ADC);
-
-    adc_gpio_init(STICK_X_PIN);
-    adc_gpio_init(STICK_Y_PIN);
-    */
     // 3MHz
     spi_init(spi0, 3000*1000);
 	gpio_set_function(STICK_SPI_CLK, GPIO_FUNC_SPI);
@@ -77,7 +72,7 @@ void init_hardware() {
     return;
 }
 
-raw_report_t read_hardware() {
+raw_report_t read_hardware(bool quick) {
     raw_report_t report = {
         .a = 0,
         .b = 0,
@@ -98,8 +93,10 @@ raw_report_t read_hardware() {
         .stick_y = 0.0f,
     };
     
-    report.stick_x = read_stick_x();
-    report.stick_y = read_stick_y();
+    if (!quick) {
+        report.stick_x = read_stick_x();
+        report.stick_y = read_stick_y();    
+    }   
 
     report.a = !gpio_get(BTN_A_PIN);
     report.b = !gpio_get(BTN_B_PIN);

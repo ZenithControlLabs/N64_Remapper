@@ -38,8 +38,8 @@ pico_generate_pio_header(Phobri64 ${CMAKE_CURRENT_LIST_DIR}/src/joybus.pio)
 pico_set_program_name(Phobri64 "Phobri64")
 pico_set_program_version(Phobri64 "0.1")
 
-pico_enable_stdio_uart(Phobri64 1)
-pico_enable_stdio_usb(Phobri64 0)
+#pico_enable_stdio_uart(Phobri64 1)
+#pico_enable_stdio_usb(Phobri64 0)
 
 add_custom_command(OUTPUT ${CMAKE_CURRENT_LIST_DIR}/generated/joybus.pio.h
 	DEPENDS ${CMAKE_CURRENT_LIST_DIR}/joybus.pio
@@ -49,8 +49,10 @@ add_custom_command(OUTPUT ${CMAKE_CURRENT_LIST_DIR}/generated/joybus.pio.h
 # Add the standard library to the build
 target_link_libraries(Phobri64
         pico_stdlib
+        pico_bootrom
         pico_multicore
         hardware_pio
+        hardware_spi
         tinyusb_device
         tinyusb_board)
 

@@ -3,7 +3,7 @@
 void second_core() {
   init_state_machine();
   create_default_n64_report();
-  stdio_init_all();
+  stdio_uart_init_full(uart0, 115200, DEBUG_TX_PIN, -1);
 
   printf("Phobri64 Initialization\n");
   while (true) {

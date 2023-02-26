@@ -17,11 +17,14 @@
 #define BTN_DU_PIN 9
 #define BTN_DD_PIN 10
 #define BTN_DL_PIN 8
-#define BTN_DD_PIN 11
+#define BTN_DR_PIN 11
 
 #define STICK_SPI_CLK 6
 #define STICK_SPI_TX 7
 #define STICK_SPI_RX 4
 #define STICK_SPI_CS 24
+
+#define DEBUG_RX_PIN 13
+#define DEBUG_TX_PIN 12
 
 #endif /* _PICO_DEBUG_H */

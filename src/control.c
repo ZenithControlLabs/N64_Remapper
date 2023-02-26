@@ -6,6 +6,15 @@ void init_state_machine() {
     _state.calibration_step = -1; // not calibrating
 
     init_hardware();
+
+    raw_report_t r_report = read_hardware(true);
+
+    // Do any startup checks
+
+    // reboot in BOOTSEL mode if start is held
+    if (r_report.start) {
+        reset_usb_boot(0, 0);
+    }
 }
 
 
@@ -79,7 +88,7 @@ void calibration_logic(raw_report_t *report) {
 
 void control_state_machine() {
     // always read raw hardware report first
-    raw_report_t r_report = read_hardware();
+    raw_report_t r_report = read_hardware(false);
     if (_state.calibration_step >= 0) {
         // we are calibrating
         calibration_logic(&r_report);

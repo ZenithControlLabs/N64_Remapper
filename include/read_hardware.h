@@ -35,6 +35,6 @@ float read_stick_y();
 
 void init_hardware();
 
-raw_report_t read_hardware();
+raw_report_t read_hardware(bool quick);
 
 #endif /* _READ_HARDWARE_H */
