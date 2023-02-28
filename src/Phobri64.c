@@ -26,14 +26,6 @@ int main() {
   usb_init_comms();
 
   while (1) {
-    /*
-    if (_report.start) {
-        gpio_put(PICO_DEFAULT_LED_PIN, true);
-    } else {
-        gpio_put(PICO_DEFAULT_LED_PIN, false);
-    }
-    sleep_ms(500);
-    */
     usb_run_comms();
   }
 

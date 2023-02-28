@@ -38,9 +38,6 @@ pico_generate_pio_header(Phobri64 ${CMAKE_CURRENT_LIST_DIR}/src/joybus.pio)
 pico_set_program_name(Phobri64 "Phobri64")
 pico_set_program_version(Phobri64 "0.1")
 
-#pico_enable_stdio_uart(Phobri64 1)
-#pico_enable_stdio_usb(Phobri64 0)
-
 add_custom_command(OUTPUT ${CMAKE_CURRENT_LIST_DIR}/generated/joybus.pio.h
 	DEPENDS ${CMAKE_CURRENT_LIST_DIR}/joybus.pio
 	COMMAND Pioasm ${CMAKE_CURRENT_LIST_DIR}/joybus.pio ${CMAKE_CURRENT_LIST_DIR}/generated/joybus.pio.h

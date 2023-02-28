@@ -9,6 +9,8 @@
 
 // SET report IDs
 #define CMD_START_CALIBRATION 0x01 // SET 
+#define CMD_INC_CAL_STEP 0x69
+#define CMD_DEC_CAL_STEP 0x68
 #define CMD_SET_NOTCH_VALUE   0x02 // SET [notch] [value]
 
 // GET report IDs
@@ -17,14 +19,18 @@
 #define CMD_GET_NOTCH_ANGLES 0x02
 
 // Interrupt report IDs
-#define CMD_INC_CAL_STEP 0x69
-#define CMD_DEC_CAL_STEP 0x68
 
 void init_state_machine();
 
 void control_state_machine();
 
-void start_calibration();
+void calibration_start();
+
+void calibration_advance();
+
+void calibration_undo();
+
+void calibration_finish();
 
 uint16_t send_state(uint8_t report_id, uint8_t *buffer, uint16_t bufsize);
 
