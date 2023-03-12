@@ -1,6 +1,12 @@
 #include "Phobri64.h"
 #include "curve_fitting.h"
 
+// FIXME - this whole file need to actually document what the units are in the signal chain
+// It's impossible to read code like this without knowing what the units actually mean.
+// For example, if you have a float, does it go from -1 to 1, 0 to 1, -127 to 127?
+// Just the type is not enough. Ideally, the types would be separate and you have to manually cast them.
+// A typedef should be sufficient
+
 float linearize(const float point, const float coefficients[]) {
 	return (coefficients[0]*(point*point*point) + coefficients[1]*(point*point) + coefficients[2]*point + coefficients[3]);
 }
@@ -267,3 +273,19 @@ void notchCalibrate(const float in_points_x[], const float in_points_y[], float 
 	}
 };
 */
+
+/*
+This method is SUPER important because it captures the signal chain of the stick reports
+Look here to find the sauce
+*/
+void process_stick(const raw_report_t* raw_report, stick_params_t *stick_params, processed_stick_t* stick_out) {
+
+	float linearized_x = linearize(raw_report->stick_x, stick_params->fit_coeffs_x);
+	float linearized_y = linearize(raw_report->stick_y, stick_params->fit_coeffs_y);
+
+	float clamped_x = fmin(128, fmax(-127, linearized_x));
+	float clamped_y = fmin(128, fmax(-127, linearized_y));
+
+	stick_out->x = (uint8_t)(clamped_x);
+	stick_out->y = (uint8_t)(clamped_y);
+}

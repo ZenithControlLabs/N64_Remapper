@@ -10,11 +10,7 @@ void init_state_machine() {
     raw_report_t r_report = read_hardware(true);
 
     // Do any startup checks
-
-    // reboot in BOOTSEL mode if start is held
-    if (r_report.start) {
-        reset_usb_boot(0, 0);
-    }
+    
 }
 
 
@@ -80,6 +76,7 @@ void calibration_undo() {
     } 
     printf("Calibration Step [%d/%d]\n", _state.calibration_step, CALIBRATION_NUM_STEPS);
 }
+bool cringe_global = false;
 
 void calibration_finish() {
     // We're done calibrating. Do the math to save our calibration parameters
@@ -91,12 +88,13 @@ void calibration_finish() {
     linearize_cal(cleaned_points_x, cleaned_points_y, linearized_points_x, linearized_points_y, &(_state.stick_params));
     printf("Calibrated!\n");
     _state.calibration_step = -1;
+    cringe_global = true;
 }
 
 
 void control_state_machine() {
     // always read raw hardware report first
-    raw_report_t r_report = read_hardware(false);
+    const raw_report_t r_report = read_hardware(false);
     if (_state.calibration_step > 0) {
         // We have nothing to do. Calibration is handled through USB commands.
         // Just communicate default controller state.
@@ -104,25 +102,9 @@ void control_state_machine() {
         // you could add button debouncing logic to trigger calibration_advance/calibration_undo here.
         create_default_n64_report();
     } else {
-        _report = (n64_report_t){
-            .dpad_right = 0,
-            .dpad_left = 0,
-            .dpad_down = 0,
-            .dpad_up = 0,
-            .start = 1,
-            .z = 0,
-            .b = 0,
-            .a = 0,
-            .c_right = 0,
-            .c_left = 0,
-            .c_down = 0,
-            .c_up = 0,
-            .r = 0,
-            .l = 0,
-            .reserved1 = 0,
-            .reserved0 = 0,
-            .stick_x = 0x0,
-            .stick_y = 0x0,
-        };
+        processed_stick_t stick_out;
+        process_stick(&r_report, &(_state.stick_params), &stick_out);
+        //if (cringe_global) printf("X %d Y %d\n", stick_out.x, stick_out.y);
+        from_raw_report(&r_report, &stick_out);
     }
 }

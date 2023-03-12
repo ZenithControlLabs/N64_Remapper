@@ -74,4 +74,6 @@ extern volatile n64_report_t _report;
 
 void create_default_n64_report(void);
 
+void from_raw_report(const raw_report_t *raw_report, processed_stick_t *stick_out);
+
 #endif /* REPORT_H_ */

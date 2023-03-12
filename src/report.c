@@ -24,3 +24,22 @@ void create_default_n64_report(void) {
       .stick_y = 0x0,
   };
 }
+
+void from_raw_report(const raw_report_t *raw_report, processed_stick_t *stick_out) {
+  _report = (n64_report_t){
+    .dpad_right = raw_report->dpad_right,
+    .dpad_left  = raw_report->dpad_left,
+    .dpad_down  = raw_report->dpad_down,
+    .dpad_up    = raw_report->dpad_up,
+    .start      = raw_report->start,
+    .z          = raw_report->zl,
+    .c_right    = raw_report->c_right,
+    .c_left     = raw_report->c_left,
+    .c_up       = raw_report->c_up,
+    .c_down     = raw_report->c_down,
+    .r          = raw_report->r,
+    .l          = raw_report->l,
+    .stick_x    = stick_out->x,
+    .stick_y    = stick_out->y
+  };
+}

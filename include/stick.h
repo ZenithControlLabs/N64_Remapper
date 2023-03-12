@@ -15,6 +15,12 @@ typedef struct {
     float boundary_angles[NUM_NOTCHES];
 } stick_params_t;
 
+// FIXME better name
+typedef struct {
+    uint8_t x;
+    uint8_t y;
+} processed_stick_t; 
+
 // This array represents the values you would sweep
 // in the notches on a perfect Hori.
 // Since a perfect hori would be symmetrical, this applies for X and Y.
@@ -29,5 +35,7 @@ float angle_on_sphere(const float x, const float y);
 void clean_cal_points(const float raw_cal_points_x[], const float raw_cal_points_y[], float cleaned_points_x[], float cleaned_points_y[]);
 
 void linearize_cal(const float cleaned_points_x[], const float cleaned_points_y[], float linearized_points_x[], float linearized_points_y[], stick_params_t *stick_params);
+
+void process_stick(const raw_report_t* raw_report, stick_params_t *stick_params, processed_stick_t* stick_out);
 
 #endif /* _STICK_H */

@@ -27,4 +27,6 @@
 #define DEBUG_RX_PIN 13
 #define DEBUG_TX_PIN 12
 
+#define EMERGENCY_BOOTSEL_PIN BTN_L_PIN
+
 #endif /* _PICO_DEBUG_H */

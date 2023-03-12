@@ -15,6 +15,17 @@ void second_core() {
 int main() {
   set_sys_clock_khz(130000, true);
 
+  gpio_init(EMERGENCY_BOOTSEL_PIN);
+  gpio_set_dir(EMERGENCY_BOOTSEL_PIN, GPIO_IN);
+  // reboot in BOOTSEL mode if start is held
+  if (gpio_get(EMERGENCY_BOOTSEL_PIN)) {
+      reset_usb_boot(0, 0);
+  }
+
+  while(1) {
+    tight_loop_contents();
+  }
+
   multicore_lockout_victim_init();
   multicore_launch_core1(second_core);
 
