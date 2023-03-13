@@ -24,9 +24,9 @@
 #define STICK_SPI_RX 4
 #define STICK_SPI_CS 24
 
+#define CSTICK_SPI_CS 23
+
 #define DEBUG_RX_PIN 13
 #define DEBUG_TX_PIN 12
-
-#define EMERGENCY_BOOTSEL_PIN BTN_L_PIN
 
 #endif /* _PICO_DEBUG_H */
