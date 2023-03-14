@@ -8,7 +8,8 @@
 // A typedef should be sufficient
 
 float linearize(const float point, const float coefficients[]) {
-	return (coefficients[0]*(point*point*point) + coefficients[1]*(point*point) + coefficients[2]*point + coefficients[3]);
+	// TODO why negate here??
+	return (-coefficients[0]*(point*point*point) + coefficients[1]*(point*point) + coefficients[2]*point + coefficients[3]);
 }
 
 /*
@@ -103,17 +104,21 @@ void linearize_cal(const float cleaned_points_x[], const float cleaned_points_y[
 	float fit_points_x[5];
 	float fit_points_y[5];
 
-	fit_points_x[0] = in_x[8+1];                     // right
-	fit_points_x[1] = (in_x[6+1] + in_x[10+1])/2.0;  // right diagonal
+	fit_points_x[0] = in_x[3];                   // left
+	fit_points_x[1] = (in_x[6] + in_x[7])/2.0;  // left diagonal
 	fit_points_x[2] = in_x[0];                       // center
-	fit_points_x[3] = (in_x[2+1] + in_x[14+1])/2.0;  // left diagonal
-	fit_points_x[4] = in_x[0+1];                     // left
+	fit_points_x[3] = (in_x[5] + in_x[8])/2.0;  // right diagonal
+	fit_points_x[4] = in_x[1];                     // right
 
-	fit_points_y[0] = in_y[12+1];                    // down
-	fit_points_y[1] = (in_y[10+1] + in_y[14+1])/2.0; // down diagonal
+	fit_points_y[0] = in_y[2];                     // up	
+	fit_points_y[1] = (in_y[5] + in_y[6])/2.0;   // up diagonal
 	fit_points_y[2] = in_y[0];                       // center
-	fit_points_y[3] = (in_y[6+1] + in_y[2+1])/2.0;   // up diagonal
-	fit_points_y[4] = in_y[4+1];                     // up	
+	fit_points_y[3] = (in_y[7] + in_y[8])/2.0; // down diagonal
+	fit_points_y[4] = in_y[4];                    // down
+
+	for (int i = 0; i < 5; i++) {
+        printf("Fit point %d; (x,y) = (%f, %f)\n", i, fit_points_x[i], fit_points_y[i]);
+    }
 
 	float* x_output = perfect_angles;
 	float* y_output = perfect_angles;
@@ -122,12 +127,12 @@ void linearize_cal(const float cleaned_points_x[], const float cleaned_points_y[
 	float temp_coeffs_y[FIT_ORDER + 1];
 
 	fitCurve(FIT_ORDER, 5, fit_points_x, x_output, FIT_ORDER+1, temp_coeffs_x);
-	fitCurve(FIT_ORDER, 5, fit_points_y, x_output, FIT_ORDER+1, temp_coeffs_y);
+	fitCurve(FIT_ORDER, 5, fit_points_y, y_output, FIT_ORDER+1, temp_coeffs_y);
 
 	//write these coefficients to the array that was passed in, this is our first output
 	for(int i = 0; i < (FIT_ORDER+1); i++){
 		stick_params->fit_coeffs_x[i] = temp_coeffs_x[i];
-		stick_params->fit_coeffs_x[i] = temp_coeffs_y[i];
+		stick_params->fit_coeffs_y[i] = temp_coeffs_y[i];
 	}
 
 	for (int i = 0; i <= NUM_NOTCHES; i++) {
@@ -283,9 +288,9 @@ void process_stick(const raw_report_t* raw_report, stick_params_t *stick_params,
 	float linearized_x = linearize(raw_report->stick_x, stick_params->fit_coeffs_x);
 	float linearized_y = linearize(raw_report->stick_y, stick_params->fit_coeffs_y);
 
-	float clamped_x = fmin(128, fmax(-127, linearized_x));
-	float clamped_y = fmin(128, fmax(-127, linearized_y));
+	float clamped_x = fmin(127, fmax(-128, linearized_x));
+	float clamped_y = fmin(127, fmax(-128, linearized_y));
 
-	stick_out->x = (uint8_t)(clamped_x);
-	stick_out->y = (uint8_t)(clamped_y);
+	stick_out->x = (int8_t)(clamped_x);
+	stick_out->y = (int8_t)(clamped_y);
 }

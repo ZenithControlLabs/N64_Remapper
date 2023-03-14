@@ -64,7 +64,7 @@ void calibration_advance() {
 
     raw_cal_points_x[_state.calibration_step-1] = x;
     raw_cal_points_y[_state.calibration_step-1] = y;
-    printf("Raw X value collected: %f\nRaw Y value collected: %f\n", read_stick_x(), read_stick_y());
+    printf("Raw X value collected: %f\nRaw Y value collected: %f\n", x, y);
     _state.calibration_step++;
 
     if (_state.calibration_step > CALIBRATION_NUM_STEPS) {
@@ -88,12 +88,25 @@ void calibration_finish() {
     // We're done calibrating. Do the math to save our calibration parameters
     float cleaned_points_x[NUM_NOTCHES + 1];
     float cleaned_points_y[NUM_NOTCHES + 1];
+    for (int i = 0; i < CALIBRATION_NUM_STEPS; i++) {
+        printf("Raw Cal point:  %d; (x,y) = (%f, %f)\n", i, raw_cal_points_x[i], raw_cal_points_y[i]);
+    }
     clean_cal_points(raw_cal_points_x, raw_cal_points_y, cleaned_points_x, cleaned_points_y);
     float linearized_points_x[NUM_NOTCHES + 1];
     float linearized_points_y[NUM_NOTCHES + 1];
+    for (int i = 0; i <= NUM_NOTCHES; i++) {
+        printf("Clean Cal point:  %d; (x,y) = (%f, %f)\n", i, cleaned_points_x[i], cleaned_points_y[i]);
+    }
     linearize_cal(cleaned_points_x, cleaned_points_y, linearized_points_x, linearized_points_y, &(_state.stick_params));
     printf("Calibrated!\n");
-    printf("X coeffs: %f %f %f, Y coeffs: %f %f %f\n", _state.stick_params.fit_coeffs_x[0], _state.stick_params.fit_coeffs_x[1], _state.stick_params.fit_coeffs_x[2], _state.stick_params.fit_coeffs_y[0], _state.stick_params.fit_coeffs_y[1], _state.stick_params.fit_coeffs_y[2]);
+    printf("X coeffs: %f %f %f %f, Y coeffs: %f %f %f %f\n", _state.stick_params.fit_coeffs_x[0],
+    _state.stick_params.fit_coeffs_x[1],
+    _state.stick_params.fit_coeffs_x[2],
+    _state.stick_params.fit_coeffs_x[3],
+    _state.stick_params.fit_coeffs_y[0],
+    _state.stick_params.fit_coeffs_y[1],
+    _state.stick_params.fit_coeffs_y[2],
+    _state.stick_params.fit_coeffs_y[3]);
     _state.calibration_step = -1;
     cringe_global = true;
 }
@@ -134,6 +147,7 @@ void control_state_machine() {
         processed_stick_t stick_out;
         process_stick(&r_report, &(_state.stick_params), &stick_out);
         //if (cringe_global) printf("X %d Y %d\n", stick_out.x, stick_out.y);
+        //printf("%d %d %d\n", r_report.a, r_report.b,r_report.zl);
         from_raw_report(&r_report, &stick_out);
         
     }

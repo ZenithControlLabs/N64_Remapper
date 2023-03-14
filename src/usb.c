@@ -95,7 +95,16 @@ hid_gamepad_report_t convertN64toHIDReport() {
     angle = GAMEPAD_HAT_UP;
   }
 
-  uint16_t buttons = (_report.a) << 0 + (_report.b) << 1 + (_report.z) << 2;
+  uint32_t buttons = (_report.a) << 0 \
+                   | (_report.b) << 1 \
+                   | (_report.z) << 2 \
+                   | (_report.start) << 3 \
+                   | (_report.l) << 4 \
+                   | (_report.r) << 5 \
+                   | (_report.c_up) << 6 \
+                   | (_report.c_down) << 7 \
+                   | (_report.c_left) << 8 \
+                   | (_report.c_right) << 9;
 
   // multiply analog values by 257 (from HayBox)
   hid_gamepad_report_t report = {.x = _report.stick_x,

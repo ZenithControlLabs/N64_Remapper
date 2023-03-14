@@ -30,8 +30,8 @@ typedef struct __attribute__((packed)) {
   uint8_t reserved1 : 1;
   uint8_t reserved0 : 1;
 
-  uint8_t stick_x;
-  uint8_t stick_y;
+  int8_t stick_x;
+  int8_t stick_y;
 } n64_report_t;
 
 typedef struct __attribute__((packed)) {

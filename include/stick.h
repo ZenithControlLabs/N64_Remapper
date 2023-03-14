@@ -8,8 +8,8 @@
 #define FIT_ORDER 3
 
 typedef struct {
-    float fit_coeffs_x[FIT_ORDER];
-    float fit_coeffs_y[FIT_ORDER];
+    float fit_coeffs_x[FIT_ORDER+1];
+    float fit_coeffs_y[FIT_ORDER+1];
 
     float affine_coeffs[NUM_NOTCHES][4];
     float boundary_angles[NUM_NOTCHES];
@@ -17,8 +17,8 @@ typedef struct {
 
 // FIXME better name
 typedef struct {
-    uint8_t x;
-    uint8_t y;
+    int8_t x;
+    int8_t y;
 } processed_stick_t; 
 
 // This array represents the values you would sweep

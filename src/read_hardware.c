@@ -21,7 +21,7 @@ int __time_critical_func(readExtAdc)(bool isXaxis) {
 	gpio_put(STICK_SPI_CS, 0);
 
 	spi_read_blocking(spi0, configBits, buf, 3);
-    printf("raw: %x %x %x\n", buf[0], buf[1], buf[2]);
+    //printf("raw: %x %x %x\n", buf[0], buf[1], buf[2]);
 	uint16_t tempValue = (((buf[0] & 0b00000111) << 9) | buf[1] << 1 | buf[2] >> 7);
 
 	gpio_put(STICK_SPI_CS, 1);

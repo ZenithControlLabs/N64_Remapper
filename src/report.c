@@ -2,13 +2,14 @@
 
 volatile n64_report_t _report;
 
+// FIXME why do i have two default n64 reports
 void create_default_n64_report(void) {
   _report = (n64_report_t){
       .dpad_right = 0,
       .dpad_left = 0,
       .dpad_down = 0,
       .dpad_up = 0,
-      .start = 1,
+      .start = 0,
       .z = 0,
       .b = 0,
       .a = 0,
@@ -33,6 +34,8 @@ void from_raw_report(const raw_report_t *raw_report, processed_stick_t *stick_ou
     .dpad_up    = raw_report->dpad_up,
     .start      = raw_report->start,
     .z          = raw_report->zl,
+    .b          = raw_report->b,
+    .a          = raw_report->a,
     .c_right    = raw_report->c_right,
     .c_left     = raw_report->c_left,
     .c_up       = raw_report->c_up,
