@@ -24,7 +24,7 @@ typedef struct {
 // This array represents the values you would sweep
 // in the notches on a perfect Hori.
 // Since a perfect hori would be symmetrical, this applies for X and Y.
-static const float perfect_angles[] = {-100, -75, 0, 75, 100};
+static const double perfect_angles[] = {-100, -75, 0, 75, 100};
 
 float linearize(const float point, const float coefficients[]);
 

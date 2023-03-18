@@ -1,5 +1,5 @@
 #include "Phobri64.h"
-#include "curve_fitting.h"
+#include "polyfit.h"
 
 // FIXME - this whole file need to actually document what the units are in the signal chain
 // It's impossible to read code like this without knowing what the units actually mean.
@@ -9,7 +9,7 @@
 
 float linearize(const float point, const float coefficients[]) {
 	// TODO why negate here??
-	return (-coefficients[0]*(point*point*point) + coefficients[1]*(point*point) + coefficients[2]*point + coefficients[3]);
+	return (coefficients[0]*(point*point*point) + coefficients[1]*(point*point) + coefficients[2]*point + coefficients[3]);
 }
 
 /*
@@ -36,7 +36,7 @@ float angle_on_sphere(const float x, const float y) {
 
     return angle;
 }
-
+ 
 
 void clean_cal_points(const float raw_cal_points_x[], const float raw_cal_points_y[], float cleaned_points_x[], float cleaned_points_y[]) {
 	cleaned_points_x[0] = 0;
@@ -101,38 +101,38 @@ void linearize_cal(const float cleaned_points_x[], const float cleaned_points_y[
 	float* out_x = linearized_points_x;
 	float* out_y = linearized_points_y;
 
-	float fit_points_x[5];
-	float fit_points_y[5];
+	double fit_points_x[5];
+	double fit_points_y[5];
 
-	fit_points_x[0] = in_x[3];                   // left
-	fit_points_x[1] = (in_x[6] + in_x[7])/2.0;  // left diagonal
-	fit_points_x[2] = in_x[0];                       // center
-	fit_points_x[3] = (in_x[5] + in_x[8])/2.0;  // right diagonal
-	fit_points_x[4] = in_x[1];                     // right
+	fit_points_x[0] = (double)in_x[3];                   // left
+	fit_points_x[1] = (double)(in_x[6] + in_x[7])/2.0;  // left diagonal
+	fit_points_x[2] = (double)in_x[0];                       // center
+	fit_points_x[3] = (double)(in_x[5] + in_x[8])/2.0;  // right diagonal
+	fit_points_x[4] = (double)in_x[1];                     // right
 
-	fit_points_y[0] = in_y[2];                     // up	
-	fit_points_y[1] = (in_y[5] + in_y[6])/2.0;   // up diagonal
-	fit_points_y[2] = in_y[0];                       // center
-	fit_points_y[3] = (in_y[7] + in_y[8])/2.0; // down diagonal
-	fit_points_y[4] = in_y[4];                    // down
+	fit_points_y[0] = (double)in_y[2];                     // up	
+	fit_points_y[1] = (double)(in_y[5] + in_y[6])/2.0;   // up diagonal
+	fit_points_y[2] = (double)in_y[0];                       // center
+	fit_points_y[3] = (double)(in_y[7] + in_y[8])/2.0; // down diagonal
+	fit_points_y[4] = (double)in_y[4];                    // down
 
 	for (int i = 0; i < 5; i++) {
         printf("Fit point %d; (x,y) = (%f, %f)\n", i, fit_points_x[i], fit_points_y[i]);
     }
 
-	float* x_output = perfect_angles;
-	float* y_output = perfect_angles;
+	double* x_output = perfect_angles;
+	double* y_output = perfect_angles;
 
-	float temp_coeffs_x[FIT_ORDER + 1];
-	float temp_coeffs_y[FIT_ORDER + 1];
+	double temp_coeffs_x[FIT_ORDER + 1];
+	double temp_coeffs_y[FIT_ORDER + 1];
 
-	fitCurve(FIT_ORDER, 5, fit_points_x, x_output, FIT_ORDER+1, temp_coeffs_x);
-	fitCurve(FIT_ORDER, 5, fit_points_y, y_output, FIT_ORDER+1, temp_coeffs_y);
+	polyfit(5, fit_points_x, x_output, FIT_ORDER+1, temp_coeffs_x);
+	polyfit(5, fit_points_y, y_output, FIT_ORDER+1, temp_coeffs_y);
 
 	//write these coefficients to the array that was passed in, this is our first output
 	for(int i = 0; i < (FIT_ORDER+1); i++){
-		stick_params->fit_coeffs_x[i] = temp_coeffs_x[i];
-		stick_params->fit_coeffs_y[i] = temp_coeffs_y[i];
+		stick_params->fit_coeffs_x[i] = (float)temp_coeffs_x[i];
+		stick_params->fit_coeffs_y[i] = (float)temp_coeffs_y[i];
 	}
 
 	for (int i = 0; i <= NUM_NOTCHES; i++) {

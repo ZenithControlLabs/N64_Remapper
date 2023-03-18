@@ -31,6 +31,7 @@ add_executable(Phobri64
   src/control.c
   src/stick.c
   src/read_hardware.c
+  src/polyfit.c
 )
 
 pico_generate_pio_header(Phobri64 ${CMAKE_CURRENT_LIST_DIR}/src/joybus.pio)

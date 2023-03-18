@@ -9,3 +9,4 @@ It uses code from:
 * [pico-examples](https://github.com/raspberrypi/pico-examples)
 * [Adafruit_TinyUSB_Arduino](https://github.com/adafruit/Adafruit_TinyUSB_Arduino)
 * [HayBox](https://github.com/JonnyHaystack/HayBox)
+* [polyfit](https://github.com/henryfo/polyfit)
