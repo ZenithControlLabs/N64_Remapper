@@ -15,7 +15,7 @@
 
 // GET report IDs
 #define CMD_GET_CAL_STEP     0x00
-#define CMD_GET_STICK_PARAMS_DEBUG 0x01
+#define CMD_GET_calib_results_DEBUG 0x01
 #define CMD_GET_NOTCH_ANGLES 0x02
 
 // Interrupt report IDs
@@ -36,7 +36,8 @@ uint16_t send_state(uint8_t report_id, uint8_t *buffer, uint16_t bufsize);
 
 typedef struct {
     int8_t calibration_step;
-    stick_params_t stick_params;
+    calib_results_t calib_results;
+    stick_config_t stick_config;
 } phobri_state_t;
 
 extern volatile phobri_state_t _state;

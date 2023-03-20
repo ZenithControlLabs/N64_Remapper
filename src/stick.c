@@ -7,36 +7,6 @@
 // Just the type is not enough. Ideally, the types would be separate and you have to manually cast them.
 // A typedef should be sufficient
 
-float linearize(const float point, const float coefficients[]) {
-	// TODO why negate here??
-	return (coefficients[0]*(point*point*point) + coefficients[1]*(point*point) + coefficients[2]*point + coefficients[3]);
-}
-
-/*
- * calcStickValues computes the stick x/y coordinates from angle.
- * This requires weird trig because the stick moves spherically.
- */
-void calc_stick_values(float angle, float* x, float* y) {
-	*x = 100*atan2f((sinf(MAX_STICK_ANGLE)*cosf(angle)),cosf(MAX_STICK_ANGLE))/MAX_STICK_ANGLE;
-	*y = 100*atan2f((sinf(MAX_STICK_ANGLE)*sinf(angle)),cosf(MAX_STICK_ANGLE))/MAX_STICK_ANGLE;
-}
-
-/*
- * Convert the x/y coordinates (actually angles on a sphere) to an azimuth
- * We first convert to a 3D coordinate and then drop to 2D, then arctan it
- * This does the opposite of calcStickValues, ideally.
- */
-float angle_on_sphere(const float x, const float y) {
-	float xx = sinf(x * MAX_STICK_ANGLE/100) * cosf(y * MAX_STICK_ANGLE/100);
-	float yy = cosf(x * MAX_STICK_ANGLE/100) * sinf(y * MAX_STICK_ANGLE/100);
-	float angle = atan2f(yy, xx); // WHY IS THIS BACKWARDS
-	if(angle < 0){
-		angle += 2*M_PI;
-	}
-
-    return angle;
-}
- 
 
 void clean_cal_points(const float raw_cal_points_x[], const float raw_cal_points_y[], float cleaned_points_x[], float cleaned_points_y[]) {
 	cleaned_points_x[0] = 0;
@@ -88,11 +58,15 @@ void clean_cal_points(const float raw_cal_points_x[], const float raw_cal_points
 	cleaned_points_y[0] = cleaned_points_y[0]/((float)NUM_NOTCHES-2);
 }
 
+float linearize(const float point, const float coefficients[]) {
+	return (coefficients[0]*(point*point*point) + coefficients[1]*(point*point) + coefficients[2]*point + coefficients[3]);
+} 
+
 /*
 this method takes the cleaned (i.e. only one neutral cal point) points and generates the linearization coefficients
 it then linearizes the provided calibration points 
 */
-void linearize_cal(const float cleaned_points_x[], const float cleaned_points_y[], float linearized_points_x[], float linearized_points_y[], stick_params_t *stick_params) {
+void linearize_cal(const float cleaned_points_x[], const float cleaned_points_y[], float linearized_points_x[], float linearized_points_y[], calib_results_t *calib_results) {
 
 	// for readability
 	const float* in_x = cleaned_points_x;
@@ -131,19 +105,18 @@ void linearize_cal(const float cleaned_points_x[], const float cleaned_points_y[
 
 	//write these coefficients to the array that was passed in, this is our first output
 	for(int i = 0; i < (FIT_ORDER+1); i++){
-		stick_params->fit_coeffs_x[i] = (float)temp_coeffs_x[i];
-		stick_params->fit_coeffs_y[i] = (float)temp_coeffs_y[i];
+		calib_results->fit_coeffs_x[i] = (float)temp_coeffs_x[i];
+		calib_results->fit_coeffs_y[i] = (float)temp_coeffs_y[i];
 	}
 
 	for (int i = 0; i <= NUM_NOTCHES; i++) {
-		out_x[i] = linearize(in_x[i], stick_params->fit_coeffs_x);
-		out_y[i] = linearize(in_y[i], stick_params->fit_coeffs_y);
+		out_x[i] = linearize(in_x[i], calib_results->fit_coeffs_x);
+		out_y[i] = linearize(in_y[i], calib_results->fit_coeffs_y);
 	}
 }
 
-/*
-//Self-explanatory.
-void inverse(const float in[3][3], float (&out)[3][3])
+// Invert a 3x3 matrix
+void inverse(const float in[3][3], float out[3][3])
 {
 	float det = in[0][0] * (in[1][1]*in[2][2] - in[2][1]*in[1][2]) -
 	            in[0][1] * (in[1][0]*in[2][2] - in[1][2]*in[2][0]) +
@@ -161,8 +134,8 @@ void inverse(const float in[3][3], float (&out)[3][3])
 	out[2][2] = (in[0][0]*in[1][1] - in[1][0]*in[0][1]) * invdet;
 }
 
-//Self-explanatory.
-void matrixMatrixMult(const float left[3][3], const float right[3][3], float (&output)[3][3])
+// Multiply two 3x3 matrices
+void matrix_matrix_mult(const float left[3][3], const float right[3][3], float output[3][3])
 {
 	for (int i = 0; i < 3; i++)
 	{
@@ -186,15 +159,39 @@ void print_mtx(const float matrix[3][3]){
 	{
 		for (j=0; j<ncol; j++)
 		{
-			printf(matrix[i][j], 6);   // print 6 decimal places
-			printf(", ");
+			printf("%.6f, ", matrix[i][j]);   // print 6 decimal places
 		}
 		printf("\n");
 	}
 	printf("\n");
-};
+}
 
-void notchCalibrate(const float in_points_x[], const float in_points_y[], float notch_points_x[], float notch_points_y[], stick_params_t *stick_params) {
+void notch_remap(const float x_in, const float y_in, float* x_out, float* y_out, const calib_results_t *calib_results) {
+	//determine the angle between the x unit vector and the current position vector
+	float angle = atan2f(x_in,y_in);
+
+	//unwrap the angle based on the first region boundary
+	if(angle < calib_results->boundary_angles[0]){
+		angle += M_PI*2;
+	}
+
+	//go through the region boundaries from lowest angle to highest, checking if the current position vector is in that region
+	//if the region is not found then it must be between the first and the last boundary, ie the last region
+	//we check GATE_REGIONS*2 because each notch has its own very small region we use to make notch values more consistent
+	int region = NUM_NOTCHES-1;
+	for(int i = 1; i < NUM_NOTCHES; i++){
+		if(angle < calib_results->boundary_angles[i]){
+			region = i-1;
+			break;
+		}
+	}
+
+	//Apply the affine transformation using the coefficients found during calibration
+	*x_out = calib_results->affine_coeffs[region][0]*x_in + calib_results->affine_coeffs[region][1]*y_in;
+	*y_out = calib_results->affine_coeffs[region][2]*x_in + calib_results->affine_coeffs[region][3]*y_in;
+}
+
+void notch_calibrate(const float in_points_x[], const float in_points_y[], float notch_points_x[], float notch_points_y[], calib_results_t *calib_results) {
 
 	for(int i = 1; i <= NUM_NOTCHES; i++){
 		printf("calibration region %d\n", i);
@@ -202,7 +199,7 @@ void notchCalibrate(const float in_points_x[], const float in_points_y[], float 
 		float pointsIn[3][3];
 		float pointsOut[3][3];
 
-		if(i == (regions)){
+		if(i == (NUM_NOTCHES)){
 			printf("final region\n");
 			pointsIn[0][0] = in_points_x[0];
 			pointsIn[0][1] = in_points_x[i];
@@ -222,8 +219,7 @@ void notchCalibrate(const float in_points_x[], const float in_points_y[], float 
 			pointsOut[2][0] = 1;
 			pointsOut[2][1] = 1;
 			pointsOut[2][2] = 1;
-		}
-		else{
+		} else {
 			pointsIn[0][0] = in_points_x[0];
 			pointsIn[0][1] = in_points_x[i];
 			pointsIn[0][2] = in_points_x[i+1];
@@ -246,14 +242,14 @@ void notchCalibrate(const float in_points_x[], const float in_points_y[], float 
 
 		printf("In points:\n");
 		print_mtx(pointsIn);
-		debug_println("Out points:");
+		printf("Out points:\n");
 		print_mtx(pointsOut);
 
 		float temp[3][3];
 		inverse(pointsIn, temp);
 
 		float A[3][3];
-		matrixMatrixMult(pointsOut, temp, A);
+		matrix_matrix_mult(pointsOut, temp, A);
 
 		printf("The transform matrix is:\n");
 		print_mtx(A);
@@ -262,34 +258,36 @@ void notchCalibrate(const float in_points_x[], const float in_points_y[], float 
 
 		for(int j = 0; j <2;j++){
 			for(int k = 0; k<2;k++){
-				stickParams.affineCoeffs[i-1][j*2+k] = A[j][k];
-				debug_print(stickParams.affineCoeffs[i-1][j*2+k]);
-				debug_print(",");
+				calib_results->affine_coeffs[i-1][j*2+k] = A[j][k];
+				//debug_print(calib_results->affine_coeffs[i-1][j*2+k]);
+				//debug_print(",");
 			}
 		}
 
 		printf("\nThe angle defining this  regions is:\n");
-		stickParams.boundaryAngles[i-1] = atan2f((yIn[i]-yIn[0]),(xIn[i]-xIn[0]));
+		calib_results->boundary_angles[i-1] = atan2f((in_points_y[i]-in_points_y[0]),(in_points_x[i]-in_points_x[0]));
 		//unwrap the angles so that the first has the smallest value
-		if(stickParams.boundaryAngles[i-1] < stickParams.boundaryAngles[0]){
-			stickParams.boundaryAngles[i-1] += M_PI*2;
+		if(calib_results->boundary_angles[i-1] < calib_results->boundary_angles[0]){
+			calib_results->boundary_angles[i-1] += M_PI*2;
 		}
-		printf("%d\n", stickParams.boundaryAngles[i-1]);
+		printf("%d\n", calib_results->boundary_angles[i-1]);
 	}
-};
-*/
+}
 
 /*
 This method is SUPER important because it captures the signal chain of the stick reports
 Look here to find the sauce
 */
-void process_stick(const raw_report_t* raw_report, stick_params_t *stick_params, processed_stick_t* stick_out) {
+void process_stick(const raw_report_t* raw_report, calib_results_t *calib_results, processed_stick_t* stick_out) {
 
-	float linearized_x = linearize(raw_report->stick_x, stick_params->fit_coeffs_x);
-	float linearized_y = linearize(raw_report->stick_y, stick_params->fit_coeffs_y);
+	float linearized_x = linearize(raw_report->stick_x, calib_results->fit_coeffs_x);
+	float linearized_y = linearize(raw_report->stick_y, calib_results->fit_coeffs_y);
 
-	float clamped_x = fmin(127, fmax(-128, linearized_x));
-	float clamped_y = fmin(127, fmax(-128, linearized_y));
+	float remapped_x, remapped_y;
+	notch_remap(linearized_x, linearized_y, &remapped_x, &remapped_y, calib_results);
+
+	float clamped_x = fmin(127, fmax(-128, remapped_x));
+	float clamped_y = fmin(127, fmax(-128, remapped_y));
 
 	stick_out->x = (int8_t)(clamped_x);
 	stick_out->y = (int8_t)(clamped_y);

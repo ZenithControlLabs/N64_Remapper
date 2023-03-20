@@ -82,7 +82,6 @@ void calibration_undo() {
     } 
     printf("Calibration Step [%d/%d]\n", _state.calibration_step, CALIBRATION_NUM_STEPS);
 }
-bool cringe_global = false;
 
 void calibration_finish() {
     // We're done calibrating. Do the math to save our calibration parameters
@@ -97,18 +96,21 @@ void calibration_finish() {
     for (int i = 0; i <= NUM_NOTCHES; i++) {
         printf("Clean Cal point:  %d; (x,y) = (%f, %f)\n", i, cleaned_points_x[i], cleaned_points_y[i]);
     }
-    linearize_cal(cleaned_points_x, cleaned_points_y, linearized_points_x, linearized_points_y, &(_state.stick_params));
+    linearize_cal(cleaned_points_x, cleaned_points_y, linearized_points_x, linearized_points_y, &(_state.calib_results));
+
+    float perfect_notches_x[] = {0,100,0,-100,0,75,-75,-75,75};
+    float perfect_notches_y[] = {0,0,100,0,-100,75,75,-75,-75};
+    notch_calibrate(linearized_points_x, linearized_points_y, perfect_notches_x, perfect_notches_y, &(_state.calib_results));
     printf("Calibrated!\n");
-    printf("X coeffs: %f %f %f %f, Y coeffs: %f %f %f %f\n", _state.stick_params.fit_coeffs_x[0],
-    _state.stick_params.fit_coeffs_x[1],
-    _state.stick_params.fit_coeffs_x[2],
-    _state.stick_params.fit_coeffs_x[3],
-    _state.stick_params.fit_coeffs_y[0],
-    _state.stick_params.fit_coeffs_y[1],
-    _state.stick_params.fit_coeffs_y[2],
-    _state.stick_params.fit_coeffs_y[3]);
+    printf("X coeffs: %f %f %f %f, Y coeffs: %f %f %f %f\n", _state.calib_results.fit_coeffs_x[0],
+    _state.calib_results.fit_coeffs_x[1],
+    _state.calib_results.fit_coeffs_x[2],
+    _state.calib_results.fit_coeffs_x[3],
+    _state.calib_results.fit_coeffs_y[0],
+    _state.calib_results.fit_coeffs_y[1],
+    _state.calib_results.fit_coeffs_y[2],
+    _state.calib_results.fit_coeffs_y[3]);
     _state.calibration_step = -1;
-    cringe_global = true;
 }
 
 
@@ -122,33 +124,10 @@ void control_state_machine() {
         // you could add button debouncing logic to trigger calibration_advance/calibration_undo here.
         create_default_n64_report();
     } else {
-        /*_report = (n64_report_t){
-            .dpad_right = 0,
-            .dpad_left = 0,
-            .dpad_down = 0,
-            .dpad_up = 0,
-            .start = 1,
-            .z = 0,
-            .b = 0,
-            .a = 0,
-            .c_right = 0,
-            .c_left = 0,
-            .c_down = 0,
-            .c_up = 0,
-            .r = 0,
-            .l = 0,
-            .reserved1 = 0,
-            .reserved0 = 0,
-            .stick_x = 0x0,
-            .stick_y = 0x0,
-        };*/
         r_report = read_hardware(false);
         
         processed_stick_t stick_out;
-        process_stick(&r_report, &(_state.stick_params), &stick_out);
-        //if (cringe_global) printf("X %d Y %d\n", stick_out.x, stick_out.y);
-        //printf("%d %d %d\n", r_report.a, r_report.b,r_report.zl);
+        process_stick(&r_report, &(_state.calib_results), &stick_out);
         from_raw_report(&r_report, &stick_out);
-        
     }
 }
