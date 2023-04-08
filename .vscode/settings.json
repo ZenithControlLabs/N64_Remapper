@@ -26,6 +26,8 @@
       "stdio.h": "c",
       "math.h": "c",
       "read_hardware.h": "c",
-      "usb.h": "c"
+      "usb.h": "c",
+      "*.inc": "c",
+      "spi.h": "c"
     },
 }

@@ -2,6 +2,7 @@
 #define PHOBRI64_H_
 
 // System includes
+#include <hardware/flash.h>
 #include <hardware/pio.h>
 #include <hardware/spi.h>
 #include <pico/multicore.h>
@@ -18,8 +19,11 @@
 #include "control.h" // The main control state machine running on core1.
 #include "joybus.h" // Handle joybus comms. Take in a controller report structure as input.
 #include "report.h" // Responsible for updating _report variable, holding the up to date (PROCESSED) controller state.
-#include "storage.h" // Responsible for saving stick settings.
 #include "usb.h"     // Handle USB communication with host PC.
+
+// This was planned but to keep things simple for now the
+// flash storage fns are called in control.c in the commit_settings function.
+//#include "storage.h" // Responsible for saving stick settings.
 
 // Hardware include - uncomment these based on the RP2040 board you are using!
 #include "hw/phob2_debug.h"

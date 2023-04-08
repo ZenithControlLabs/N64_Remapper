@@ -22,7 +22,7 @@ int main() {
   gpio_set_dir(PICO_DEFAULT_LED_PIN, GPIO_OUT);
   gpio_put(PICO_DEFAULT_LED_PIN, false);
 
-  joybus_init_comms();
+  //joybus_init_comms();
   usb_init_comms();
 
   while (1) {

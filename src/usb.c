@@ -29,7 +29,7 @@ void tud_resume_cb(void) { return; }
 // Application can use this to send the next report
 // Note: For composite reports, report[0] is report ID
 void tud_hid_report_complete_cb(uint8_t instance, uint8_t const *report,
-                                uint8_t len) {
+                                uint16_t len) {
   (void)instance;
   (void)report;
   (void)len;
@@ -62,6 +62,7 @@ void tud_hid_set_report_cb(uint8_t instance, uint8_t report_id,
     case CMD_START_CALIBRATION: calibration_start(); break;
     case CMD_INC_CAL_STEP: calibration_advance(); break;
     case CMD_DEC_CAL_STEP: calibration_undo(); break;
+    case CMD_COMMIT_SETTINGS: commit_state(); break;
     case CMD_SET_NOTCH_VALUE: return;
   }
 

@@ -2,38 +2,9 @@
 
 volatile phobri_state_t _state;
 
-void init_state_machine() {
-    _state.calibration_step = 0; // not calibrating
-
-    init_hardware();
-
-    raw_report_t r_report = read_hardware(true);
-
-    // Do any startup checks
-        
-    // reboot in BOOTSEL mode if start is held
-    if (r_report.start) {
-        sleep_ms(1);
-        reset_usb_boot(0, 0);
-    }
-}
-
-
-uint16_t send_state(uint8_t report_id, uint8_t *buffer, uint16_t bufsize) {
-
-    uint16_t sz = 0;
-    switch (report_id) {
-        case CMD_GET_CAL_STEP: {
-            buffer[0] = _state.calibration_step;
-            sz = 1;
-            debug_print("Get cal step..\n");
-            break;
-        }
-        default: sz = 0; break;
-    }
-    
-    return sz;
-}
+//////////////////
+// CALIBRATION //
+////////////////
 
 float raw_cal_points_x[CALIBRATION_NUM_STEPS];
 float raw_cal_points_y[CALIBRATION_NUM_STEPS];
@@ -113,6 +84,81 @@ void calibration_finish() {
     _state.calibration_step = -1;
 }
 
+//////////////////////
+// STATE SER/DESER //
+////////////////////
+
+uint16_t send_state(uint8_t report_id, uint8_t *buffer, uint16_t bufsize) {
+    uint16_t sz = 0;
+    switch (report_id) {
+        case CMD_GET_CAL_STEP: {
+            buffer[0] = _state.calibration_step;
+            sz = 1;
+            debug_print("Get cal step..\n");
+            break;
+        }
+        default: sz = 0; break;
+    }
+    
+    return sz;
+}
+
+// 256k from start of flash
+#define FLASH_OFFSET (256 * 1024)
+#define MULTICORE_LOCKOUT_TIMEOUT (uint64_t)10 * 365 * 24 * 60 * 60 * 1000 * 1000
+void __not_in_flash_func(commit_state)() {
+    uint8_t settings_buf[FLASH_SECTOR_SIZE];
+
+    memcpy(settings_buf, (uint8_t*)(&_state), sizeof(phobri_state_t));
+
+	//multicore_lockout_start_blocking();
+    const bool locked = multicore_lockout_start_timeout_us(MULTICORE_LOCKOUT_TIMEOUT);
+
+    if (locked) {
+        uint32_t interrupts = save_and_disable_interrupts();
+        flash_range_erase(FLASH_OFFSET, FLASH_SECTOR_SIZE);
+        flash_range_program(FLASH_OFFSET, settings_buf, FLASH_SECTOR_SIZE);
+        restore_interrupts(interrupts);
+        bool unlocked = false;
+
+        printf("should print here\n");
+        do {
+            unlocked = multicore_lockout_end_timeout_us(MULTICORE_LOCKOUT_TIMEOUT);
+        } while(!unlocked);
+    }
+    /*uint32_t ints = save_and_disable_interrupts();
+    //flash_range_erase(FLASH_OFFSET, FLASH_SECTOR_SIZE);
+    //flash_range_program(FLASH_OFFSET, settings_buf, FLASH_SECTOR_SIZE);
+    restore_interrupts(ints);
+	//multicore_lockout_end_blocking();*/
+    debug_print("Wrote settings to flash.\n");
+}
+
+void load_state() {
+    memcpy((uint8_t*)(&_state), (void*)(XIP_BASE + FLASH_OFFSET), sizeof(phobri_state_t));
+}
+
+///////////////////////////////////
+// MAIN STATE MACHINE FUNCTIONS //
+/////////////////////////////////
+
+void init_state_machine() {
+    // load our configuration from flash
+    load_state();
+    _state.calibration_step = 0; // not calibrating
+
+    init_hardware();
+
+    raw_report_t r_report = read_hardware(true);
+
+    // Do any startup checks
+        
+    // reboot in BOOTSEL mode if start is held
+    if (r_report.start) {
+        sleep_ms(1);
+        reset_usb_boot(0, 0);
+    }
+}
 
 void control_state_machine() {
     // always read raw hardware report first

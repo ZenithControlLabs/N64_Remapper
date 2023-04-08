@@ -51,6 +51,7 @@ target_link_libraries(Phobri64
         pico_multicore
         hardware_pio
         hardware_spi
+        hardware_flash
         tinyusb_device
         tinyusb_board)
 
