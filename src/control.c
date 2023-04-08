@@ -26,7 +26,7 @@ uint16_t send_state(uint8_t report_id, uint8_t *buffer, uint16_t bufsize) {
         case CMD_GET_CAL_STEP: {
             buffer[0] = _state.calibration_step;
             sz = 1;
-            printf("Get cal step..\n");
+            debug_print("Get cal step..\n");
             break;
         }
         default: sz = 0; break;
@@ -42,7 +42,7 @@ void calibration_start() {
     // if for some reason start_calibration is sent after it is already started, just ignore the command
     if (_state.calibration_step < 1) {
         _state.calibration_step = 1;
-        printf("Starting calibration!\nCalibration Step [%d/%d]\n", _state.calibration_step, CALIBRATION_NUM_STEPS);
+        debug_print("Starting calibration!\nCalibration Step [%d/%d]\n", _state.calibration_step, CALIBRATION_NUM_STEPS);
     }
 }
 
@@ -64,13 +64,13 @@ void calibration_advance() {
 
     raw_cal_points_x[_state.calibration_step-1] = x;
     raw_cal_points_y[_state.calibration_step-1] = y;
-    printf("Raw X value collected: %f\nRaw Y value collected: %f\n", x, y);
+    debug_print("Raw X value collected: %f\nRaw Y value collected: %f\n", x, y);
     _state.calibration_step++;
 
     if (_state.calibration_step > CALIBRATION_NUM_STEPS) {
         calibration_finish();
     } else {
-        printf("Calibration Step [%d/%d]\n", _state.calibration_step, CALIBRATION_NUM_STEPS);
+        debug_print("Calibration Step [%d/%d]\n", _state.calibration_step, CALIBRATION_NUM_STEPS);
     }
     
 }
@@ -80,7 +80,7 @@ void calibration_undo() {
     if (_state.calibration_step > 1) {
         _state.calibration_step--;
     } 
-    printf("Calibration Step [%d/%d]\n", _state.calibration_step, CALIBRATION_NUM_STEPS);
+    debug_print("Calibration Step [%d/%d]\n", _state.calibration_step, CALIBRATION_NUM_STEPS);
 }
 
 void calibration_finish() {
@@ -88,21 +88,21 @@ void calibration_finish() {
     float cleaned_points_x[NUM_NOTCHES + 1];
     float cleaned_points_y[NUM_NOTCHES + 1];
     for (int i = 0; i < CALIBRATION_NUM_STEPS; i++) {
-        printf("Raw Cal point:  %d; (x,y) = (%f, %f)\n", i, raw_cal_points_x[i], raw_cal_points_y[i]);
+        debug_print("Raw Cal point:  %d; (x,y) = (%f, %f)\n", i, raw_cal_points_x[i], raw_cal_points_y[i]);
     }
     clean_cal_points(raw_cal_points_x, raw_cal_points_y, cleaned_points_x, cleaned_points_y);
     float linearized_points_x[NUM_NOTCHES + 1];
     float linearized_points_y[NUM_NOTCHES + 1];
     for (int i = 0; i <= NUM_NOTCHES; i++) {
-        printf("Clean Cal point:  %d; (x,y) = (%f, %f)\n", i, cleaned_points_x[i], cleaned_points_y[i]);
+        debug_print("Clean Cal point:  %d; (x,y) = (%f, %f)\n", i, cleaned_points_x[i], cleaned_points_y[i]);
     }
     linearize_cal(cleaned_points_x, cleaned_points_y, linearized_points_x, linearized_points_y, &(_state.calib_results));
 
     float perfect_notches_x[] = {0,100,0,-100,0,75,-75,-75,75};
     float perfect_notches_y[] = {0,0,100,0,-100,75,75,-75,-75};
     notch_calibrate(linearized_points_x, linearized_points_y, perfect_notches_x, perfect_notches_y, &(_state.calib_results));
-    printf("Calibrated!\n");
-    printf("X coeffs: %f %f %f %f, Y coeffs: %f %f %f %f\n", _state.calib_results.fit_coeffs_x[0],
+    debug_print("Calibrated!\n");
+    debug_print("X coeffs: %f %f %f %f, Y coeffs: %f %f %f %f\n", _state.calib_results.fit_coeffs_x[0],
     _state.calib_results.fit_coeffs_x[1],
     _state.calib_results.fit_coeffs_x[2],
     _state.calib_results.fit_coeffs_x[3],

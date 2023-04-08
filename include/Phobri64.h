@@ -24,4 +24,13 @@
 // Hardware include - uncomment these based on the RP2040 board you are using!
 #include "hw/phob2_debug.h"
 
+// Enable or disable printf based on whether or not we're making a debug build.
+#ifdef DEBUG
+#define debug_print(fmt, args...) printf(fmt, ##args)
+
+// TODO: maybe put flags here for various parts of the system?
+#else
+#define debug_print(fmt, args...)
+#endif
+
 #endif /* PHOBRI64_H_ */

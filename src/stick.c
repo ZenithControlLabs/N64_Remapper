@@ -91,7 +91,7 @@ void linearize_cal(const float cleaned_points_x[], const float cleaned_points_y[
 	fit_points_y[4] = (double)in_y[4];                    // down
 
 	for (int i = 0; i < 5; i++) {
-        printf("Fit point %d; (x,y) = (%f, %f)\n", i, fit_points_x[i], fit_points_y[i]);
+        debug_print("Fit point %d; (x,y) = (%f, %f)\n", i, fit_points_x[i], fit_points_y[i]);
     }
 
 	double* x_output = perfect_angles;
@@ -134,37 +134,6 @@ void inverse(const float in[3][3], float out[3][3])
 	out[2][2] = (in[0][0]*in[1][1] - in[1][0]*in[0][1]) * invdet;
 }
 
-// Multiply two 3x3 matrices
-void matrix_matrix_mult(const float left[3][3], const float right[3][3], float output[3][3])
-{
-	for (int i = 0; i < 3; i++)
-	{
-		for (int j = 0; j < 3; j++)
-		{
-			output[i][j] = 0;
-			for (int k = 0; k < 3; k++)
-			{
-				output[i][j] += left[i][k] * right[k][j];
-			}
-		}
-	}
-}
-
-void print_mtx(const float matrix[3][3]){
-	int i, j, nrow, ncol;
-	nrow = 3;
-	ncol = 3;
-	printf("\n");
-	for (i=0; i<nrow; i++)
-	{
-		for (j=0; j<ncol; j++)
-		{
-			printf("%.6f, ", matrix[i][j]);   // print 6 decimal places
-		}
-		printf("\n");
-	}
-	printf("\n");
-}
 
 void notch_remap(const float x_in, const float y_in, float* x_out, float* y_out, const calib_results_t *calib_results) {
 	//determine the angle between the x unit vector and the current position vector
@@ -191,16 +160,48 @@ void notch_remap(const float x_in, const float y_in, float* x_out, float* y_out,
 	*y_out = calib_results->affine_coeffs[region][2]*x_in + calib_results->affine_coeffs[region][3]*y_in;
 }
 
+// Multiply two 3x3 matrices
+void matrix_matrix_mult(const float left[3][3], const float right[3][3], float output[3][3])
+{
+	for (int i = 0; i < 3; i++)
+	{
+		for (int j = 0; j < 3; j++)
+		{
+			output[i][j] = 0;
+			for (int k = 0; k < 3; k++)
+			{
+				output[i][j] += left[i][k] * right[k][j];
+			}
+		}
+	}
+}
+
+void print_mtx(const float matrix[3][3]){
+	int i, j, nrow, ncol;
+	nrow = 3;
+	ncol = 3;
+	debug_print("\n");
+	for (i=0; i<nrow; i++)
+	{
+		for (j=0; j<ncol; j++)
+		{
+			debug_print("%.6f, ", matrix[i][j]);   // print 6 decimal places
+		}
+		debug_print("\n");
+	}
+	debug_print("\n");
+}
+
 void notch_calibrate(const float in_points_x[], const float in_points_y[], float notch_points_x[], float notch_points_y[], calib_results_t *calib_results) {
 
 	for(int i = 1; i <= NUM_NOTCHES; i++){
-		printf("calibration region %d\n", i);
+		//("calibration region %d\n", i);
 
 		float pointsIn[3][3];
 		float pointsOut[3][3];
 
 		if(i == (NUM_NOTCHES)){
-			printf("final region\n");
+			//debug_print("final region\n");
 			pointsIn[0][0] = in_points_x[0];
 			pointsIn[0][1] = in_points_x[i];
 			pointsIn[0][2] = in_points_x[1];
@@ -240,10 +241,10 @@ void notch_calibrate(const float in_points_x[], const float in_points_y[], float
 			pointsOut[2][2] = 1;
 		}
 
-		printf("In points:\n");
-		print_mtx(pointsIn);
-		printf("Out points:\n");
-		print_mtx(pointsOut);
+		//debug_print("In points:\n");
+		//print_mtx(pointsIn);
+		//debug_print("Out points:\n");
+		//print_mtx(pointsOut);
 
 		float temp[3][3];
 		inverse(pointsIn, temp);
@@ -251,10 +252,10 @@ void notch_calibrate(const float in_points_x[], const float in_points_y[], float
 		float A[3][3];
 		matrix_matrix_mult(pointsOut, temp, A);
 
-		printf("The transform matrix is:\n");
-		print_mtx(A);
+		//debug_print("The transform matrix is:\n");
+		//print_mtx(A);
 
-		printf("The affine transform coefficients for this region are:\n");
+		//debug_print("The affine transform coefficients for this region are:\n");
 
 		for(int j = 0; j <2;j++){
 			for(int k = 0; k<2;k++){
@@ -264,13 +265,13 @@ void notch_calibrate(const float in_points_x[], const float in_points_y[], float
 			}
 		}
 
-		printf("\nThe angle defining this  regions is:\n");
+		//debug_print("\nThe angle defining this  regions is:\n");
 		calib_results->boundary_angles[i-1] = atan2f((in_points_y[i]-in_points_y[0]),(in_points_x[i]-in_points_x[0]));
 		//unwrap the angles so that the first has the smallest value
 		if(calib_results->boundary_angles[i-1] < calib_results->boundary_angles[0]){
 			calib_results->boundary_angles[i-1] += M_PI*2;
 		}
-		printf("%d\n", calib_results->boundary_angles[i-1]);
+		//debug_print("%d\n", calib_results->boundary_angles[i-1]);
 	}
 }
 

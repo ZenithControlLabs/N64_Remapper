@@ -67,4 +67,6 @@ target_link_libraries(Phobri64
 
 add_compile_options(-finline-functions)
 
+add_compile_definitions(DEBUG)
+
 pico_add_extra_outputs(Phobri64)

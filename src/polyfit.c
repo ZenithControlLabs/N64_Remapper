@@ -27,8 +27,6 @@
 // SOFTWARE.
 //------------------------------------------------------------------------------------
 
-
-
 // Define this to print matrix computation results to terminal (probably not very useful)
 //#define MATRIX_DEBUGGING
 
@@ -51,9 +49,10 @@ void reallyShowMatrix(double mat[], int rows, int cols) {
     reallyShowMatrix( x, r, c); \
     printf( "\n" ); \
 } while( 0 )
-
+#define polyfit_dbg(fmt, args...) printf(fmt, ##args)
 #else   // MATRIX_DEBUGGING
 #define showMatrix( x, r, c )
+#define polyfit_dbg(fmt, args...)
 #endif   // MATRIX_DEBUGGING
 
 int polyfit( int pointCount, double *xValues, double *yValues, int coefficientCount, double *coefficientResults )
@@ -138,9 +137,7 @@ int polyfit( int pointCount, double *xValues, double *yValues, int coefficientCo
         // If it's zero, we can't solve the equations.
         if( 0.0 == prVal )
         {
-	    #ifdef MATRIX_DEBUGGING	
-            printf( "Unable to solve equations, pr = %d, c = %d.\n", pr, c );
-	    #endif // MATRIX_DEBUGGING
+            polyfit_dbg( "Unable to solve equations, pr = %d, c = %d.\n", pr, c );
             showMatrix( pMatATA, coefficientCount, coefficientCount);
             rVal = -4;
             break;
@@ -154,12 +151,9 @@ int polyfit( int pointCount, double *xValues, double *yValues, int coefficientCo
                 for( int c2 = 0; c2 < coefficientCount; c2++ )
                 {
                     pMatATA[r][c2] -=  pMatATA[pr][c2] * factor; 
-		    #ifdef MATRIX_DEBUGGING
-                    printf( "c = %d, pr = %d, r = %d, c2=%d, targetRowVal = %f, prVal = %f, factor = %f.\n",
+                    polyfit_dbg( "c = %d, pr = %d, r = %d, c2=%d, targetRowVal = %f, prVal = %f, factor = %f.\n",
                              c, pr, r, c2, targetRowVal, prVal, factor );
-		    #endif // MATRIX_DEBUGGING
-		    showMatrix( pMatATA, coefficientCount, coefficientCount);
-                   
+		            showMatrix( pMatATA, coefficientCount, coefficientCount);                   
                 }
                 pMatATB[r] -=  pMatATB[pr] * factor;
 
