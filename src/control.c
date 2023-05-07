@@ -105,32 +105,17 @@ uint16_t send_state(uint8_t report_id, uint8_t *buffer, uint16_t bufsize) {
 
 // 256k from start of flash
 #define FLASH_OFFSET (256 * 1024)
-#define MULTICORE_LOCKOUT_TIMEOUT (uint64_t)10 * 365 * 24 * 60 * 60 * 1000 * 1000
 void __not_in_flash_func(commit_state)() {
     uint8_t settings_buf[FLASH_SECTOR_SIZE];
 
-    memcpy(settings_buf, (uint8_t*)(&_state), sizeof(phobri_state_t));
+    memcpy(settings_buf, (uint8_t*)(&_state), sizeof(_state));
 
-	//multicore_lockout_start_blocking();
-    const bool locked = multicore_lockout_start_timeout_us(MULTICORE_LOCKOUT_TIMEOUT);
-
-    if (locked) {
-        uint32_t interrupts = save_and_disable_interrupts();
-        flash_range_erase(FLASH_OFFSET, FLASH_SECTOR_SIZE);
-        flash_range_program(FLASH_OFFSET, settings_buf, FLASH_SECTOR_SIZE);
-        restore_interrupts(interrupts);
-        bool unlocked = false;
-
-        printf("should print here\n");
-        do {
-            unlocked = multicore_lockout_end_timeout_us(MULTICORE_LOCKOUT_TIMEOUT);
-        } while(!unlocked);
-    }
-    /*uint32_t ints = save_and_disable_interrupts();
+	multicore_lockout_start_blocking();
+    uint32_t ints = save_and_disable_interrupts();
     //flash_range_erase(FLASH_OFFSET, FLASH_SECTOR_SIZE);
     //flash_range_program(FLASH_OFFSET, settings_buf, FLASH_SECTOR_SIZE);
     restore_interrupts(ints);
-	//multicore_lockout_end_blocking();*/
+	multicore_lockout_end_blocking();
     debug_print("Wrote settings to flash.\n");
 }
 
