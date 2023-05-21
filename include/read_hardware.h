@@ -3,8 +3,6 @@
 
 #include "Phobri64.h"
 
-#define ADC_MAX 4096
-
 typedef struct __attribute__((packed)) {    
     bool a : 1;
     bool b : 1;
@@ -29,9 +27,10 @@ typedef struct __attribute__((packed)) {
     float stick_y;
 } raw_report_t;
 
-float read_stick_x();
+uint16_t __time_critical_func(readExtAdc)(bool isXaxis)
 
-float read_stick_y();
+#define read_stick_x() read_ext_adc(true);
+#define read_stick_y() read_ext_adc(false);
 
 void init_hardware();
 

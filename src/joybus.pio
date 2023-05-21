@@ -65,9 +65,6 @@ static inline pio_sm_config joybus_program_get_config(PIO pio, uint sm, uint off
     pio_set_irq1_source_enabled(pio,pis_sm0_tx_fifo_not_full + sm, true);
     pio_interrupt_clear(pio, sm);
 
-    
-
-
     return c;
 }
 

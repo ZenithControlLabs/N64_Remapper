@@ -8,14 +8,14 @@
 #define CALIBRATION_NUM_STEPS NUM_NOTCHES * 2
 
 // SET report IDs
-#define CMD_START_CALIBRATION 0x01 // SET 
+#define CMD_START_CALIBRATION 0x01 // SET
 #define CMD_INC_CAL_STEP 0x69
 #define CMD_DEC_CAL_STEP 0x68
-#define CMD_SET_NOTCH_VALUE   0x02 // SET [notch] [value]
+#define CMD_SET_NOTCH_VALUE 0x02 // SET [notch] [value]
 #define CMD_COMMIT_SETTINGS 0x03
 
 // GET report IDs
-#define CMD_GET_CAL_STEP     0x00
+#define CMD_GET_CAL_STEP 0x00
 #define CMD_GET_calib_results_DEBUG 0x01
 #define CMD_GET_NOTCH_ANGLES 0x02
 

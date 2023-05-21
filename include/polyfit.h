@@ -15,8 +15,8 @@
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
 //
-// The above copyright notice and this permission notice shall be included in all
-// copies or substantial portions of the Software.
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
 //
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -27,10 +27,8 @@
 // SOFTWARE.
 //------------------------------------------------------------------------------------
 
-
 #ifndef POLYFIT_H
 #define POLYFIT_H
-
 
 //------------------------------------------------
 // Function Prototypes
@@ -43,7 +41,7 @@
 //
 // Returns 0 if success.
 //--------------------------------------------------------
-int polyfit( int pointCount, double *xValues, double *yValues, int coefficientCount, double *coefficientResults );
+int polyfit(int pointCount, double *xValues, double *yValues,
+            int coefficientCount, double *coefficientResults);
 
-
-#endif	// POLYFIT_H
+#endif // POLYFIT_H

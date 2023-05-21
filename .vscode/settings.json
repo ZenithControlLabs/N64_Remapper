@@ -30,4 +30,5 @@
       "*.inc": "c",
       "spi.h": "c"
     },
+    "editor.formatOnSave": true,
 }

@@ -9,11 +9,11 @@
  * @brief A structure representing a Joybus instance on a given GPIO pin
  */
 typedef struct {
-  uint pin;
-  PIO pio;
-  uint sm;
-  uint offset;
-  pio_sm_config config;
+    uint pin;
+    PIO pio;
+    uint sm;
+    uint offset;
+    pio_sm_config config;
 } joybus_port_t;
 
 /**

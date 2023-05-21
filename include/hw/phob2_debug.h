@@ -5,9 +5,9 @@
 #define BTN_A_PIN 17
 #define BTN_B_PIN 16
 #define BTN_START_PIN 20 // Z
-#define BTN_ZL_PIN 22 // L
-#define BTN_R_PIN 21 // R
-#define BTN_L_PIN 5 // Start
+#define BTN_ZL_PIN 22    // L
+#define BTN_R_PIN 21     // R
+#define BTN_L_PIN 5      // Start
 
 //#define BTN_CU_PIN 6
 //#define BTN_CD_PIN 7

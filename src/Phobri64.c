@@ -18,10 +18,6 @@ int main() {
   multicore_lockout_victim_init();
   multicore_launch_core1(second_core);
 
-  gpio_init(PICO_DEFAULT_LED_PIN);
-  gpio_set_dir(PICO_DEFAULT_LED_PIN, GPIO_OUT);
-  gpio_put(PICO_DEFAULT_LED_PIN, false);
-
   //joybus_init_comms();
   usb_init_comms();
 
