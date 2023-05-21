@@ -41,7 +41,7 @@
 //
 // Returns 0 if success.
 //--------------------------------------------------------
-int polyfit(int pointCount, double *xValues, double *yValues,
+int polyfit(int pointCount, const double *xValues, const double *yValues,
             int coefficientCount, double *coefficientResults);
 
 #endif // POLYFIT_H

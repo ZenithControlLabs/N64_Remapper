@@ -103,14 +103,11 @@ void linearize_cal(const float cleaned_points_x[],
                     fit_points_y[i]);
     }
 
-    double *x_output = perfect_angles;
-    double *y_output = perfect_angles;
-
     double temp_coeffs_x[FIT_ORDER + 1];
     double temp_coeffs_y[FIT_ORDER + 1];
 
-    polyfit(5, fit_points_x, x_output, FIT_ORDER + 1, temp_coeffs_x);
-    polyfit(5, fit_points_y, y_output, FIT_ORDER + 1, temp_coeffs_y);
+    polyfit(5, fit_points_x, perfect_angles, FIT_ORDER + 1, temp_coeffs_x);
+    polyfit(5, fit_points_y, perfect_angles, FIT_ORDER + 1, temp_coeffs_y);
 
     // write these coefficients to the array that was passed in, this is our
     // first output
@@ -293,7 +290,7 @@ void notch_calibrate(const float in_points_x[], const float in_points_y[],
 
 /*
 This method is SUPER important because it captures the signal chain of the stick
-reports Look here to find the sauce
+reports. Look here to find the sauce
 */
 void process_stick(const raw_report_t *raw_report,
                    calib_results_t *calib_results,

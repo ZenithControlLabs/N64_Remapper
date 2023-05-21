@@ -56,7 +56,7 @@ void reallyShowMatrix(double mat[], int rows, int cols) {
 #define polyfit_dbg(fmt, args...)
 #endif // MATRIX_DEBUGGING
 
-int polyfit(int pointCount, double *xValues, double *yValues,
+int polyfit(int pointCount, const double *xValues, const double *yValues,
             int coefficientCount, double *coefficientResults) {
     int rVal = 0;
     int degree = coefficientCount - 1;
