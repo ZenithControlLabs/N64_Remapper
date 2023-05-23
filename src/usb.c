@@ -110,7 +110,7 @@ hid_gamepad_report_t convertN64toHIDReport() {
 
     // multiply analog values by 257 (from HayBox)
     hid_gamepad_report_t report = {.x = _report.stick_x,
-                                   .y = -_report.stick_y,
+                                   .y = _report.stick_y,
                                    .z = 0,
                                    .rz = 0,
                                    .rx = 0,
