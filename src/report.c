@@ -45,3 +45,7 @@ void from_raw_report(const raw_report_t *raw_report,
                              .stick_x = stick_out->x,
                              .stick_y = stick_out->y};
 }
+
+#ifdef DEBUG
+volatile debug_report_t _dbg_report;
+#endif

@@ -77,4 +77,20 @@ void create_default_n64_report(void);
 void from_raw_report(const raw_report_t *raw_report,
                      processed_stick_t *stick_out);
 
+// Debug reporting features
+#ifdef DEBUG
+
+typedef struct {
+    float stick_x_raw;
+    float stick_y_raw;
+    float stick_x_lin;
+    float stick_y_lin;
+} debug_report_t;
+
+extern volatile debug_report_t _dbg_report;
+
+#define DEBUG_REPORT_ID 0x69
+
+#endif
+
 #endif /* REPORT_H_ */

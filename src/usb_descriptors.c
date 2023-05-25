@@ -120,7 +120,17 @@ uint8_t const desc_hid_report[] = {
         HID_REPORT_COUNT   ( 64                                     ) ,\
         HID_REPORT_SIZE    ( 8                                      ) ,\
         HID_FEATURE        ( HID_DATA | HID_VARIABLE | HID_ABSOLUTE | HID_WRAP_NO | HID_LINEAR | HID_PREFERRED_STATE | HID_NO_NULL_POSITION | HID_NON_VOLATILE ) ,\
-
+    HID_COLLECTION_END, \
+    HID_USAGE_PAGE ( HID_USAGE_PAGE_DESKTOP     )                 ,\
+    HID_USAGE      ( HID_USAGE_DESKTOP_GAMEPAD  )                 ,\
+    HID_COLLECTION ( HID_COLLECTION_APPLICATION )                 ,\
+        HID_REPORT_ID(0x5)\
+        HID_USAGE_PAGE     ( 0x00                  ) ,\
+        HID_LOGICAL_MIN    ( 0x80                                   ) ,\
+        HID_LOGICAL_MAX    ( 0x7F                                   ) ,\
+        HID_REPORT_COUNT   ( 64                                     ) ,\
+        HID_REPORT_SIZE    ( 8                                      ) ,\
+        HID_INPUT        ( HID_DATA | HID_VARIABLE | HID_ABSOLUTE | HID_WRAP_NO | HID_LINEAR | HID_PREFERRED_STATE | HID_NO_NULL_POSITION | HID_NON_VOLATILE ) ,\
     HID_COLLECTION_END \
 };
 // clang-format on

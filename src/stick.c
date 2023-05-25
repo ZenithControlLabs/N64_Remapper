@@ -310,4 +310,11 @@ void process_stick(const raw_report_t *raw_report,
 
     stick_out->x = (int8_t)(clamped_x);
     stick_out->y = (int8_t)(clamped_y);
+
+#ifdef DEBUG
+    _dbg_report.stick_x_raw = raw_report->stick_x;
+    _dbg_report.stick_y_raw = raw_report->stick_y;
+    _dbg_report.stick_x_lin = linearized_x;
+    _dbg_report.stick_y_lin = linearized_y;
+#endif
 }

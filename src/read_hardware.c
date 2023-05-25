@@ -1,8 +1,10 @@
 #include "Phobri64.h"
 
+mutex_t adc_mtx;
+
 // for external MCP3202 adc, 12 bit
 uint16_t __time_critical_func(read_ext_adc)(bool isXaxis) {
-
+    mutex_enter_blocking(&adc_mtx);
     const uint8_t config_val = isXaxis ? 0xD0 : 0xF0;
     uint8_t data_buf[3];
     gpio_put(STICK_SPI_CS, 0);
@@ -12,7 +14,7 @@ uint16_t __time_critical_func(read_ext_adc)(bool isXaxis) {
         ((data_buf[0] & 0x07) << 9) | data_buf[1] << 1 | data_buf[2] >> 7;
 
     gpio_put(STICK_SPI_CS, 1);
-
+    mutex_exit(&adc_mtx);
     return tempValue;
 }
 
@@ -60,6 +62,7 @@ void init_hardware() {
     gpio_put(CSTICK_SPI_CS, 1);
 #endif
 
+    mutex_init(&adc_mtx);
     return;
 }
 

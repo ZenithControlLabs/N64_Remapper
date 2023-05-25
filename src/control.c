@@ -171,6 +171,11 @@ void control_state_machine() {
         // calibration, you could add button debouncing logic to trigger
         // calibration_advance/calibration_undo here.
         create_default_n64_report();
+#ifdef DEBUG
+        r_report = read_hardware(false);
+        _dbg_report.stick_x_raw = r_report.stick_x;
+        _dbg_report.stick_y_raw = r_report.stick_y;
+#endif
     } else {
         r_report = read_hardware(false);
 

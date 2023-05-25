@@ -126,12 +126,21 @@ hid_gamepad_report_t convertN64toHIDReport() {
 //--------------------------------------------------------------------+
 
 static void send_hid_report() {
+    static which = false;
     // skip if hid is not ready yet
     if (!tud_hid_ready())
         return;
 
     hid_gamepad_report_t report = convertN64toHIDReport();
+#ifdef DEBUG
+    if (which)
+        tud_hid_report(0x5, &_dbg_report, sizeof(report));
+    else
+        tud_hid_report(REPORT_ID_GAMEPAD, &report, sizeof(report));
+    which = !which;
+#else
     tud_hid_report(REPORT_ID_GAMEPAD, &report, sizeof(report));
+#endif
 }
 
 uint16_t send_custom_report(uint8_t cmd) {
@@ -146,8 +155,12 @@ uint16_t send_custom_report(uint8_t cmd) {
 // ..) tud_hid_report_complete_cb() is used to send the next report after
 // previous one is complete
 void hid_task(void) {
-    // Poll every 10ms
+// Poll every 10ms
+#ifdef DEBUG
+    const uint32_t interval_ms = 5;
+#else
     const uint32_t interval_ms = 10;
+#endif
     static uint32_t start_ms = 0;
 
     if (to_ms_since_boot(get_absolute_time()) - start_ms < interval_ms)

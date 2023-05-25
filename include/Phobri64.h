@@ -16,6 +16,7 @@
 
 // pico
 #include <pico/bootrom.h>
+#include <pico/lock_core.h>
 #include <pico/multicore.h>
 #include <pico/stdlib.h>
 #include <pico/time.h>
