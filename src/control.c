@@ -135,8 +135,18 @@ void __not_in_flash_func(commit_state)() {
 }
 
 void load_state() {
-    memcpy((uint8_t *)(&_state), (void *)(XIP_BASE + FLASH_OFFSET),
+    /*memcpy((uint8_t *)(&_state), (void *)(XIP_BASE + FLASH_OFFSET),
            sizeof(phobri_state_t));
+    */
+
+    const float fit_coeffs_x_phob[] = {-2180.96582031, 3341.85083008,
+                                       -1943.22387695, 420.425537109};
+    const float fit_coeffs_y_phob[] = {-1494.0579834, 2152.84741211,
+                                       -1292.37756348, 309.844512939};
+    for (int i = 0; i < 4; i++) {
+        _state.calib_results.fit_coeffs_x[i] = fit_coeffs_x_phob[i];
+        _state.calib_results.fit_coeffs_y[i] = fit_coeffs_y_phob[i];
+    }
 }
 
 ///////////////////////////////////

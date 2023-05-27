@@ -301,12 +301,12 @@ void process_stick(const raw_report_t *raw_report,
     float linearized_y =
         linearize(raw_report->stick_y, calib_results->fit_coeffs_y);
 
-    float remapped_x, remapped_y;
+    /*float remapped_x, remapped_y;
     notch_remap(linearized_x, linearized_y, &remapped_x, &remapped_y,
-                calib_results);
+                calib_results);*/
 
-    float clamped_x = fmin(127, fmax(-128, remapped_x));
-    float clamped_y = fmin(127, fmax(-128, remapped_y));
+    float clamped_x = fmin(127, fmax(-128, linearized_x));
+    float clamped_y = fmin(127, fmax(-128, linearized_y));
 
     stick_out->x = (int8_t)(clamped_x);
     stick_out->y = (int8_t)(clamped_y);
