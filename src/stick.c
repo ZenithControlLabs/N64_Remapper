@@ -111,10 +111,10 @@ void linearize_cal(const float cleaned_points_x[],
 
     // write these coefficients to the array that was passed in, this is our
     // first output
-    for (int i = 0; i < (FIT_ORDER + 1); i++) {
-        calib_results->fit_coeffs_x[i] = (float)temp_coeffs_x[i];
-        calib_results->fit_coeffs_y[i] = (float)temp_coeffs_y[i];
-    }
+    // for (int i = 0; i < (FIT_ORDER + 1); i++) {
+    //    calib_results->fit_coeffs_x[i] = (float)temp_coeffs_x[i];
+    //    calib_results->fit_coeffs_y[i] = (float)temp_coeffs_y[i];
+    //}
 
     for (int i = 0; i <= NUM_NOTCHES; i++) {
         out_x[i] = linearize(in_x[i], calib_results->fit_coeffs_x);
@@ -301,12 +301,12 @@ void process_stick(const raw_report_t *raw_report,
     float linearized_y =
         linearize(raw_report->stick_y, calib_results->fit_coeffs_y);
 
-    /*float remapped_x, remapped_y;
+    float remapped_x, remapped_y;
     notch_remap(linearized_x, linearized_y, &remapped_x, &remapped_y,
-                calib_results);*/
+                calib_results);
 
-    float clamped_x = fmin(127, fmax(-128, linearized_x));
-    float clamped_y = fmin(127, fmax(-128, linearized_y));
+    float clamped_x = fmin(127, fmax(-128, remapped_x));
+    float clamped_y = fmin(127, fmax(-128, remapped_y));
 
     stick_out->x = (int8_t)(clamped_x);
     stick_out->y = (int8_t)(clamped_y);
