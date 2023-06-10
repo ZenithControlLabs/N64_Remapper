@@ -30,7 +30,7 @@ typedef struct {
 // Since a perfect hori would be symmetrical, this applies for X and Y.
 static const double perfect_angles[] = {-100, -75, 0, 75, 100};
 
-void clean_cal_points(const float raw_cal_points_x[],
+void fold_center_points(const float raw_cal_points_x[],
                       const float raw_cal_points_y[], float cleaned_points_x[],
                       float cleaned_points_y[]);
 

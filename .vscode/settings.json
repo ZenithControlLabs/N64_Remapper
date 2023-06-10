@@ -29,7 +29,8 @@
     "read_hardware.h": "c",
     "usb.h": "c",
     "*.inc": "c",
-    "spi.h": "c"
+    "spi.h": "c",
+    "*.in": "c"
   },
   "editor.formatOnSave": true,
 }

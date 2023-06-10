@@ -69,19 +69,25 @@ void calibration_finish() {
         debug_print("Raw Cal point:  %d; (x,y) = (%f, %f)\n", i,
                     raw_cal_points_x[i], raw_cal_points_y[i]);
     }
-    clean_cal_points(raw_cal_points_x, raw_cal_points_y, cleaned_points_x,
-                     cleaned_points_y);
-    float linearized_points_x[NUM_NOTCHES + 1];
-    float linearized_points_y[NUM_NOTCHES + 1];
+    fold_center_points(raw_cal_points_x, raw_cal_points_y, cleaned_points_x,
+                       cleaned_points_y);
+    // One less because center is becoming 0 implcitly
+    float linearized_points_x[NUM_NOTCHES];
+    float linearized_points_y[NUM_NOTCHES];
     for (int i = 0; i <= NUM_NOTCHES; i++) {
         debug_print("Clean Cal point:  %d; (x,y) = (%f, %f)\n", i,
                     cleaned_points_x[i], cleaned_points_y[i]);
     }
     linearize_cal(cleaned_points_x, cleaned_points_y, linearized_points_x,
                   linearized_points_y, &(_state.calib_results));
+    for (int i = 0; i < NUM_NOTCHES; i++) {
+        debug_print("Linearized point:  %d; (x,y) = (%f, %f)\n", i,
+                    linearized_points_x[i], linearized_points_y[i]);
+    }
 
-    float perfect_notches_x[] = {0, 100, 0, -100, 0, 75, -75, -75, 75};
-    float perfect_notches_y[] = {0, 0, 100, 0, -100, 75, 75, -75, -75};
+    // Center is also assumed to be 0 here.
+    float perfect_notches_x[] = {100, 75, 0, -75, -100, -75, 0, 75};
+    float perfect_notches_y[] = {0, 75, 100, 75, 0, -75, -100, -75};
     notch_calibrate(linearized_points_x, linearized_points_y, perfect_notches_x,
                     perfect_notches_y, &(_state.calib_results));
     debug_print("Calibrated!\n");
@@ -139,7 +145,7 @@ void load_state() {
            sizeof(phobri_state_t));
     */
 
-    const float fit_coeffs_x_phob[] = {-2180.96582031, 3341.85083008,
+    /*const float fit_coeffs_x_phob[] = {-2180.96582031, 3341.85083008,
                                        -1943.22387695, 420.425537109};
     const float fit_coeffs_y_phob[] = {-1494.0579834, 2152.84741211,
                                        -1292.37756348, 309.844512939};
@@ -214,7 +220,8 @@ void load_state() {
         for (int j = 0; j < 4; j++) {
             _state.calib_results.affine_coeffs[i][j] = affine_coeffs_phob[i][j];
         }
-    }
+    }*/
+    return;
 }
 
 ///////////////////////////////////

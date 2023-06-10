@@ -108,6 +108,7 @@ hid_gamepad_report_t convertN64toHIDReport() {
                        (_report.c_down) << 7 | (_report.c_left) << 8 |
                        (_report.c_right) << 9;
 
+    // todo note about why this magic -1 is here
     hid_gamepad_report_t report = {.x = _report.stick_x,
                                    .y = -_report.stick_y,
                                    .z = 0,
