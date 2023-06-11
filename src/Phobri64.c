@@ -1,33 +1,54 @@
 #include "Phobri64.h"
 
-void second_core() {
-  init_state_machine();
-  create_default_n64_report();
-  stdio_uart_init_full(uart0, 115200, DEBUG_TX_PIN, -1);
+bool _pleaseCommit = false;
 
-  debug_print("Phobri64 Initialization\n");
-  while (true) {
-    control_state_machine();
-    sleep_us(100);
-  }
+void second_core() {
+    create_default_n64_report();
+
+    debug_print("Phobri64 Initialization\n");
+    while (true) {
+        if (_pleaseCommit) {
+            commit_config_state();
+            _pleaseCommit = false;
+        }
+
+        process_controller();
+
+        sleep_us(100);
+    }
 }
 
 int main() {
-  set_sys_clock_khz(130000, true);
+    set_sys_clock_khz(130000, true);
+    multicore_lockout_victim_init();
 
-  multicore_lockout_victim_init();
-  multicore_launch_core1(second_core);
+    // Initialize all relevant hardware pins
+    stdio_uart_init_full(uart0, 115200, DEBUG_TX_PIN, -1);
+    init_hardware();
 
-  gpio_init(PICO_DEFAULT_LED_PIN);
-  gpio_set_dir(PICO_DEFAULT_LED_PIN, GPIO_OUT);
-  gpio_put(PICO_DEFAULT_LED_PIN, false);
+    // Initialize report mutex before launching things on both cores
+    mutex_init(&_report_lock);
 
-  joybus_init_comms();
-  usb_init_comms();
+    // Startup checks
+    raw_report_t r_report = read_hardware(true);
+    // reboot in BOOTSEL mode if start is held
+    if (r_report.start) {
+        sleep_ms(1);
+        reset_usb_boot(0, 0);
+    }
 
-  while (1) {
-    usb_run_comms();
-  }
+    // Initialize config state (load stuff from flash)
+    init_config_state();
 
-  return 0;
+    // Now launch core1
+    multicore_launch_core1(second_core);
+
+    joybus_init_comms();
+    usb_init_comms();
+
+    while (1) {
+        usb_run_comms();
+    }
+
+    return 0;
 }

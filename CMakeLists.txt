@@ -28,7 +28,7 @@ add_executable(Phobri64
   src/report.c
   src/usb.c
   src/usb_descriptors.c
-  src/control.c
+  src/config.c
   src/stick.c
   src/read_hardware.c
   src/polyfit.c
@@ -51,6 +51,7 @@ target_link_libraries(Phobri64
         pico_multicore
         hardware_pio
         hardware_spi
+        hardware_flash
         tinyusb_device
         tinyusb_board)
 

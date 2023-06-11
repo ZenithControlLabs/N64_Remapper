@@ -1,31 +1,37 @@
 {
   "cmake.configureOnOpen": false,
   "cmake.statusbar.advanced": {
-    "debug" : {
+    "debug": {
       "visibility": "hidden"
-              },    "launch" : {
-      "visibility": "hidden"
-               },
-    "build" : {
-      "visibility": "hidden"
-               },
-    "buildTarget" : {
-      "visibility": "hidden"
-               },
     },
-    "files.associations": {
-      "pio.h": "c",
-      "stdlib.h": "c",
-      "joybus.h": "c",
-      "n64_definitions.h": "c",
-      "phobri64.h": "c",
-      "multicore.h": "c",
-      "report.h": "c",
-      "tusb.h": "c",
-      "storage.h": "c",
-      "stdio.h": "c",
-      "math.h": "c",
-      "read_hardware.h": "c",
-      "usb.h": "c"
+    "launch": {
+      "visibility": "hidden"
     },
+    "build": {
+      "visibility": "hidden"
+    },
+    "buildTarget": {
+      "visibility": "hidden"
+    },
+  },
+  "files.associations": {
+    "pio.h": "c",
+    "stdlib.h": "c",
+    "joybus.h": "c",
+    "n64_definitions.h": "c",
+    "phobri64.h": "c",
+    "multicore.h": "c",
+    "report.h": "c",
+    "tusb.h": "c",
+    "storage.h": "c",
+    "stdio.h": "c",
+    "math.h": "c",
+    "read_hardware.h": "c",
+    "usb.h": "c",
+    "*.inc": "c",
+    "spi.h": "c",
+    "*.in": "c",
+    "flash.h": "c"
+  },
+  "editor.formatOnSave": true,
 }

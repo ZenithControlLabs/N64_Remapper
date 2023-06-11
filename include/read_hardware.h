@@ -1,11 +1,11 @@
 #ifndef _READ_HARDWARE_H
 #define _READ_HARDWARE_H
 
+#define ADC_MAX 4096.0
+
 #include "Phobri64.h"
 
-#define ADC_MAX 4096
-
-typedef struct __attribute__((packed)) {    
+typedef struct __attribute__((packed)) {
     bool a : 1;
     bool b : 1;
     bool start : 1;
@@ -29,9 +29,9 @@ typedef struct __attribute__((packed)) {
     float stick_y;
 } raw_report_t;
 
-float read_stick_x();
-
 float read_stick_y();
+
+float read_stick_x();
 
 void init_hardware();
 
