@@ -85,7 +85,7 @@ uint8_t const desc_hid_report[] = {
         HID_USAGE          ( HID_USAGE_DESKTOP_X                    ) ,\
         HID_USAGE          ( HID_USAGE_DESKTOP_Y                    ) ,\
         HID_USAGE          ( HID_USAGE_DESKTOP_Z                    ) ,\
-        HID_USAGE          ( HID_USAGE_DESKTOP_RZ                   ) ,\
+        HID_USAGE          ( HID_USAGE_DESKTOP_RZ                    ) ,\
         HID_USAGE          ( HID_USAGE_DESKTOP_RX                   ) ,\
         HID_USAGE          ( HID_USAGE_DESKTOP_RY                   ) ,\
         HID_LOGICAL_MIN    ( 0x81                                   ) ,\
@@ -113,19 +113,20 @@ uint8_t const desc_hid_report[] = {
         HID_REPORT_SIZE    ( 1                                      ) ,\
         HID_INPUT          ( HID_DATA | HID_VARIABLE | HID_ABSOLUTE ) ,\
         /* Feature reports */
-        /* unassigned */
-        HID_USAGE_PAGE     ( 0x00                  ) ,\
+        HID_USAGE_PAGE_N     ( HID_USAGE_PAGE_VENDOR, 2                  ) ,\
+        HID_USAGE (0x01),\
         HID_LOGICAL_MIN    ( 0x80                                   ) ,\
         HID_LOGICAL_MAX    ( 0x7F                                   ) ,\
-        HID_REPORT_COUNT   ( 64                                     ) ,\
+        HID_REPORT_COUNT   ( 1                                     ) ,\
         HID_REPORT_SIZE    ( 8                                      ) ,\
         HID_FEATURE        ( HID_DATA | HID_VARIABLE | HID_ABSOLUTE | HID_WRAP_NO | HID_LINEAR | HID_PREFERRED_STATE | HID_NO_NULL_POSITION | HID_NON_VOLATILE ) ,\
     HID_COLLECTION_END, \
-    HID_USAGE_PAGE ( HID_USAGE_PAGE_DESKTOP     )                 ,\
-    HID_USAGE      ( HID_USAGE_DESKTOP_GAMEPAD  )                 ,\
+    HID_USAGE_PAGE_N ( HID_USAGE_PAGE_VENDOR, 2     )                 ,\
+    HID_USAGE      ( 0x02  )                 ,\
     HID_COLLECTION ( HID_COLLECTION_APPLICATION )                 ,\
         HID_REPORT_ID(0x5)\
-        HID_USAGE_PAGE     ( 0x00                  ) ,\
+        HID_USAGE_PAGE_N     ( HID_USAGE_PAGE_VENDOR, 2                  ) ,\
+        HID_USAGE (0x02),\
         HID_LOGICAL_MIN    ( 0x80                                   ) ,\
         HID_LOGICAL_MAX    ( 0x7F                                   ) ,\
         HID_REPORT_COUNT   ( 64                                     ) ,\
