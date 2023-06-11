@@ -30,7 +30,8 @@
     "usb.h": "c",
     "*.inc": "c",
     "spi.h": "c",
-    "*.in": "c"
+    "*.in": "c",
+    "flash.h": "c"
   },
   "editor.formatOnSave": true,
 }

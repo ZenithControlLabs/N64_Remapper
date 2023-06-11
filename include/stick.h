@@ -15,8 +15,10 @@ typedef struct {
 } calib_results_t;
 
 typedef struct {
-    int8_t notch_points_x[NUM_NOTCHES + 1];
-    int8_t notch_points_y[NUM_NOTCHES + 1];
+    int8_t notch_points_x[NUM_NOTCHES];
+    int8_t notch_points_y[NUM_NOTCHES];
+    float linearized_points_x[NUM_NOTCHES];
+    float linearized_points_y[NUM_NOTCHES];
 } stick_config_t;
 
 // FIXME better name
@@ -31,8 +33,8 @@ typedef struct {
 static const double perfect_angles[] = {-100, -75, 0, 75, 100};
 
 void fold_center_points(const float raw_cal_points_x[],
-                      const float raw_cal_points_y[], float cleaned_points_x[],
-                      float cleaned_points_y[]);
+                        const float raw_cal_points_y[],
+                        float cleaned_points_x[], float cleaned_points_y[]);
 
 float linearize(const float point, const float coefficients[]);
 

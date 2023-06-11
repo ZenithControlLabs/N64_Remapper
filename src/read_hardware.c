@@ -97,7 +97,9 @@ raw_report_t read_hardware(bool quick) {
     report.start = !gpio_get(BTN_START_PIN);
     report.r = !gpio_get(BTN_R_PIN);
     report.l = !gpio_get(BTN_L_PIN);
-    // report.zr = !gpio_get(BTN_ZR_PIN);
+#ifdef BTN_ZR_PIN
+    report.zr = !gpio_get(BTN_ZR_PIN);
+#endif
     report.zl = !gpio_get(BTN_ZL_PIN);
     report.c_right = !gpio_get(BTN_CR_PIN);
     report.c_left = !gpio_get(BTN_CL_PIN);

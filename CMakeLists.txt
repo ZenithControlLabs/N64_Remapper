@@ -28,7 +28,7 @@ add_executable(Phobri64
   src/report.c
   src/usb.c
   src/usb_descriptors.c
-  src/control.c
+  src/config.c
   src/stick.c
   src/read_hardware.c
   src/polyfit.c

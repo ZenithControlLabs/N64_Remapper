@@ -1,8 +1,12 @@
 #include "Phobri64.h"
 
-volatile n64_report_t _report;
+n64_report_t _report;
+mutex_t _report_lock;
 
-// FIXME why do i have two default n64 reports
+#ifdef DEBUG
+debug_report_t _dbg_report;
+#endif
+
 void create_default_n64_report(void) {
     _report = (n64_report_t){
         .dpad_right = 0,
@@ -28,6 +32,7 @@ void create_default_n64_report(void) {
 
 void from_raw_report(const raw_report_t *raw_report,
                      processed_stick_t *stick_out) {
+    mutex_enter_blocking(&_report_lock);
     _report = (n64_report_t){.dpad_right = raw_report->dpad_right,
                              .dpad_left = raw_report->dpad_left,
                              .dpad_down = raw_report->dpad_down,
@@ -44,8 +49,38 @@ void from_raw_report(const raw_report_t *raw_report,
                              .l = raw_report->l,
                              .stick_x = stick_out->x,
                              .stick_y = stick_out->y};
+    mutex_exit(&_report_lock);
 }
 
+// If this function sounds incredibly generic, it's because it is. It's the main
+// loop body in our core1.
+//
+// We read the raw hardware, and process any special commands, then process the
+// stick data using our calibration steps.
+void process_controller() {
+    // always read raw hardware report first
+    raw_report_t r_report = read_hardware(false);
 #ifdef DEBUG
-volatile debug_report_t _dbg_report;
+    // command to reset the controller without having to replug usb, for
+    // debugging purposes
+    if (r_report.l & r_report.zl & r_report.r) {
+        reset_usb_boot(0, 0);
+    }
 #endif
+    if (_cfg_st.calibration_step > 0) {
+        // We have nothing to do. Calibration is handled through USB commands.
+        // Just communicate default controller state.
+        // In the future, if we want to allow controller buttons to advance/undo
+        // calibration, you could add button debouncing logic to trigger
+        // calibration_advance/calibration_undo here.
+        create_default_n64_report();
+#ifdef DEBUG
+        _dbg_report.stick_x_raw = r_report.stick_x;
+        _dbg_report.stick_y_raw = r_report.stick_y;
+#endif
+    } else {
+        processed_stick_t stick_out;
+        process_stick(&r_report, &(_cfg_st.calib_results), &stick_out);
+        from_raw_report(&r_report, &stick_out);
+    }
+}

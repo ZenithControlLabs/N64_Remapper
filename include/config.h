@@ -1,5 +1,5 @@
-#ifndef _CONTROL_H
-#define _CONTROL_H
+#ifndef _CONFIG_H
+#define _CONFIG_H
 
 #include "Phobri64.h"
 
@@ -26,9 +26,9 @@ typedef struct {
     int8_t calibration_step;
     calib_results_t calib_results;
     stick_config_t stick_config;
-} phobri_state_t;
+} config_state_t;
 
-extern volatile phobri_state_t _state;
+extern config_state_t _cfg_st;
 
 //////////////////
 // CALIBRATION //
@@ -42,22 +42,15 @@ void calibration_undo();
 
 void calibration_finish();
 
-///////////////////////////////////
-// MAIN STATE MACHINE FUNCTIONS //
-/////////////////////////////////
+/////////////////////
+// STATE HANDLING //
+///////////////////
 
-void init_state_machine();
+uint16_t send_config_state(uint8_t report_id, uint8_t *buffer,
+                           uint16_t bufsize);
 
-void control_state_machine();
+void commit_config_state();
 
-//////////////////////
-// STATE SER/DESER //
-////////////////////
+void init_config_state();
 
-uint16_t send_state(uint8_t report_id, uint8_t *buffer, uint16_t bufsize);
-
-void commit_state();
-
-void load_state();
-
-#endif /* _CONTROL_H */
+#endif /* _COFNIG_H */

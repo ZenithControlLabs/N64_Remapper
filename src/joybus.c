@@ -29,9 +29,15 @@ static void __not_in_flash_func(rx_fifo_not_empty_handler)(void) {
                     false); // disable RX interrupts. we do not care what
                             // happens on the bus now since we have control.
 
+    // Copying this data is a critical section.
+    // However, this is an ISR. We don't want to block here forever.
+    // TODO: move this to block_until, leaving it as blocking for now so I can
+    // debug
+    mutex_enter_blocking(&_report_lock);
     for (int i = 0; i < len; i++) {
         _bytes[i] = resp[i];
     }
+    mutex_exit(&_report_lock);
 
     _len = len;
     irq_set_enabled(

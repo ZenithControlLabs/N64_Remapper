@@ -44,7 +44,7 @@ uint16_t tud_hid_get_report_cb(uint8_t instance, uint8_t report_id,
     // TODO not Implemented
     (void)report_type;
 
-    return send_state(report_id, buffer, bufsize);
+    return send_config_state(report_id, buffer, bufsize);
 }
 
 void tud_hid_set_report_cb(uint8_t instance, uint8_t report_id,
@@ -66,7 +66,7 @@ void tud_hid_set_report_cb(uint8_t instance, uint8_t report_id,
         calibration_undo();
         break;
     case CMD_COMMIT_SETTINGS:
-        commit_state();
+        _pleaseCommit = true;
         break;
     case CMD_SET_NOTCH_VALUE:
         return;
@@ -76,48 +76,30 @@ void tud_hid_set_report_cb(uint8_t instance, uint8_t report_id,
 }
 
 hid_gamepad_report_t convertN64toHIDReport() {
-    // from TUGamepad.cpp in Haybox
-    hid_gamepad_hat_t angle = GAMEPAD_HAT_CENTERED;
-
-    bool up = _report.dpad_up;
-    bool down = _report.dpad_down;
-    bool right = _report.dpad_right;
-    bool left = _report.dpad_left;
-
-    if (right && !left) {
-        angle = GAMEPAD_HAT_RIGHT;
-        if (down)
-            angle = GAMEPAD_HAT_DOWN_RIGHT;
-        if (up)
-            angle = GAMEPAD_HAT_UP_RIGHT;
-    } else if (left && !right) {
-        angle = GAMEPAD_HAT_LEFT;
-        if (down)
-            angle = GAMEPAD_HAT_DOWN_LEFT;
-        if (up)
-            angle = GAMEPAD_HAT_UP_LEFT;
-    } else if (down && !up) {
-        angle = GAMEPAD_HAT_DOWN;
-    } else if (up && !down) {
-        angle = GAMEPAD_HAT_UP;
-    }
+    // Joybus is not allowed to interrupt us here.
+    // We are reading the report, and thus claiming the critical section
+    uint32_t ints = save_and_disable_interrupts();
+    mutex_enter_blocking(&_report_lock);
 
     uint32_t buttons = (_report.a) << 0 | (_report.b) << 1 | (_report.z) << 2 |
                        (_report.start) << 3 | (_report.l) << 4 |
                        (_report.r) << 5 | (_report.c_up) << 6 |
                        (_report.c_down) << 7 | (_report.c_left) << 8 |
-                       (_report.c_right) << 9;
+                       (_report.c_right) << 9 | (_report.dpad_up) << 10 |
+                       (_report.dpad_down) << 11 | (_report.dpad_left) << 12 |
+                       (_report.dpad_right) << 12;
 
-    // todo note about why this magic -1 is here
+    // Y is multiplied by -1 because HID input seems to flip the axes.
     hid_gamepad_report_t report = {.x = _report.stick_x,
                                    .y = -_report.stick_y,
                                    .z = 0,
                                    .rz = 0,
                                    .rx = 0,
                                    .ry = 0,
-                                   .hat = angle,
+                                   .hat = GAMEPAD_HAT_CENTERED,
                                    .buttons = buttons};
-
+    mutex_exit(&_report_lock);
+    restore_interrupts(ints);
     return report;
 }
 
@@ -133,6 +115,7 @@ static void send_hid_report() {
 
     hid_gamepad_report_t report = convertN64toHIDReport();
 #ifdef DEBUG
+    // we don't care that much about locking for debug reports.
     if (which)
         tud_hid_report(0x5, &_dbg_report, sizeof(report));
     else
