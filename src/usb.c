@@ -29,8 +29,11 @@ void tud_resume_cb(void) { return; }
 void tud_hid_report_complete_cb(uint8_t instance, uint8_t const *report,
                                 uint16_t len) {
     (void)instance;
-    (void)report;
     (void)len;
+
+    if ((report[0] == REPORT_ID_GAMEPAD) && _cfg_state.report_dbg) {
+        tud_hid_report(REPORT_ID_DEBUG, &_dbg_report, sizeof(report));
+    }
 
     return;
 }
@@ -66,7 +69,7 @@ void tud_hid_set_report_cb(uint8_t instance, uint8_t report_id,
         calibration_undo();
         break;
     case CMD_COMMIT_SETTINGS:
-        _pleaseCommit = true;
+        _please_commit = true;
         break;
     case CMD_SET_NOTCH_VALUE:
         return;
@@ -108,22 +111,13 @@ hid_gamepad_report_t convertN64toHIDReport() {
 //--------------------------------------------------------------------+
 
 static void send_hid_report() {
-    static bool which = false;
     // skip if hid is not ready yet
     if (!tud_hid_ready())
         return;
 
     hid_gamepad_report_t report = convertN64toHIDReport();
-#ifdef DEBUG
-    // we don't care that much about locking for debug reports.
-    if (which)
-        tud_hid_report(0x5, &_dbg_report, sizeof(report));
-    else
-        tud_hid_report(REPORT_ID_GAMEPAD, &report, sizeof(report));
-    which = !which;
-#else
+
     tud_hid_report(REPORT_ID_GAMEPAD, &report, sizeof(report));
-#endif
 }
 
 uint16_t send_custom_report(uint8_t cmd) {

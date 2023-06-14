@@ -124,7 +124,7 @@ uint8_t const desc_hid_report[] = {
     HID_USAGE_PAGE_N ( HID_USAGE_PAGE_VENDOR, 2     )                 ,\
     HID_USAGE      ( 0x02  )                 ,\
     HID_COLLECTION ( HID_COLLECTION_APPLICATION )                 ,\
-        HID_REPORT_ID(0x5)\
+        HID_REPORT_ID(REPORT_ID_DEBUG)\
         HID_USAGE_PAGE_N     ( HID_USAGE_PAGE_VENDOR, 2                  ) ,\
         HID_USAGE (0x02),\
         HID_LOGICAL_MIN    ( 0x80                                   ) ,\

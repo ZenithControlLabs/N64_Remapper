@@ -2,6 +2,22 @@
 
 config_state_t _cfg_st;
 
+///////////////
+// SETTINGS //
+/////////////
+
+// These settings method aren't publicly exposed (signature isn't in config.h)
+// The USB code interacts with getSetting and setSetting, it doesn't care about
+// functions happening behind the scene.
+
+void set_notch(int notch, uint8_t x) {}
+
+void update_notch_calib() {}
+
+void set_setting(setting_id_t st, const uint8_t *buffer) {}
+
+void get_setting(setting_id_t st, const uint8_t *buffer) {}
+
 //////////////////
 // CALIBRATION //
 ////////////////
@@ -62,6 +78,7 @@ void calibration_undo() {
 }
 
 void calibration_finish() {
+    // TODO comment all of this and make it decent
     // We're done calibrating. Do the math to save our calibration parameters
     float cleaned_points_x[NUM_NOTCHES + 1];
     float cleaned_points_y[NUM_NOTCHES + 1];
@@ -80,16 +97,19 @@ void calibration_finish() {
     }
     linearize_cal(cleaned_points_x, cleaned_points_y, linearized_points_x,
                   linearized_points_y, &(_cfg_st.calib_results));
+    // Copy the linearized points we have just found to phobri's internal data
+    // sturcture.
     for (int i = 0; i < NUM_NOTCHES; i++) {
+        _cfg_st.stick_config.linearized_points_x[i] = linearized_points_x[i];
+        _cfg_st.stick_config.linearized_points_y[i] = linearized_points_y[i];
         debug_print("Linearized point:  %d; (x,y) = (%f, %f)\n", i,
                     linearized_points_x[i], linearized_points_y[i]);
     }
 
-    // Center is also assumed to be 0 here.
-    float perfect_notches_x[] = {100, 75, 0, -75, -100, -75, 0, 75};
-    float perfect_notches_y[] = {0, 75, 100, 75, 0, -75, -100, -75};
-    notch_calibrate(linearized_points_x, linearized_points_y, perfect_notches_x,
-                    perfect_notches_y, &(_cfg_st.calib_results));
+    notch_calibrate(linearized_points_x, linearized_points_y,
+                    _cfg_st.stick_config.notch_points_y,
+                    _cfg_st.stick_config.notch_points_y,
+                    &(_cfg_st.calib_results));
     debug_print("Calibrated!\n");
     debug_print("X coeffs: %f %f %f %f, Y coeffs: %f %f %f %f\n",
                 _cfg_st.calib_results.fit_coeffs_x[0],
