@@ -39,8 +39,8 @@
 //#include "storage.h" // Responsible for saving stick settings.
 
 // Hardware include - uncomment these based on the RP2040 board you are using!
-#include "hw/phob2_debug.h"
-//#include "hw/phobri64_proto.h"
+//#include "hw/phob2_debug.h"
+#include "hw/phobri_proto.h"
 
 // Core 1 doesn't like to be interrupted with multicore_lockout_blocking for
 // some reason, even when it calls multicore_lockout_victim_init(). So, when we

@@ -23,6 +23,7 @@
 #define STICK_SPI_TX 7
 #define STICK_SPI_RX 4
 #define STICK_SPI_CS 24
+#define STICK_SPI_INTF spi0
 
 #define CSTICK_SPI_CS 23
 
