@@ -5,11 +5,12 @@ mutex_t adc_mtx;
 // for external MCP3202 adc, 12 bit
 uint16_t __time_critical_func(read_ext_adc)(bool isXaxis) {
     mutex_enter_blocking(&adc_mtx);
-    const uint8_t config_val = isXaxis ? 0xD0 : 0xF0;
+    const uint8_t config_val =
+        (STICK_FLIP_ADC_CHANNELS ^ isXaxis) ? 0xD0 : 0xF0;
     uint8_t data_buf[3];
     gpio_put(STICK_SPI_CS, 0);
 
-    spi_read_blocking(spi0, config_val, data_buf, 3);
+    spi_read_blocking(STICK_SPI_INTF, config_val, data_buf, 3);
     uint16_t tempValue =
         ((data_buf[0] & 0x07) << 9) | data_buf[1] << 1 | data_buf[2] >> 7;
 

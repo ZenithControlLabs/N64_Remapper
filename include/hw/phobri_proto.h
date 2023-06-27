@@ -25,6 +25,7 @@
 #define STICK_SPI_RX 28
 #define STICK_SPI_CS 29
 #define STICK_SPI_INTF spi1
+#define STICK_FLIP_ADC_CHANNELS true
 
 #define DEBUG_TX_PIN 12
 
