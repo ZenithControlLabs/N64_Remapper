@@ -90,7 +90,7 @@ hid_gamepad_report_t convertN64toHIDReport() {
                        (_report.c_down) << 7 | (_report.c_left) << 8 |
                        (_report.c_right) << 9 | (_report.dpad_up) << 10 |
                        (_report.dpad_down) << 11 | (_report.dpad_left) << 12 |
-                       (_report.dpad_right) << 12;
+                       (_report.dpad_right) << 13;
 
     // Y is multiplied by -1 because HID input seems to flip the axes.
     hid_gamepad_report_t report = {.x = _report.stick_x,

@@ -13,7 +13,7 @@
 #define BTN_CU_PIN 15
 #define BTN_CD_PIN 16
 #define BTN_CL_PIN 17
-#define BTN_CR_PIN 14 
+#define BTN_CR_PIN 14
 
 #define BTN_DU_PIN 25
 #define BTN_DD_PIN 22
@@ -24,6 +24,8 @@
 #define STICK_SPI_TX 27
 #define STICK_SPI_RX 28
 #define STICK_SPI_CS 29
+#define STICK_SPI_INTF spi1
+#define STICK_FLIP_ADC_CHANNELS true
 
 #define DEBUG_TX_PIN 12
 
