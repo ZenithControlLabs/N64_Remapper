@@ -245,8 +245,8 @@ void print_mtx(const float matrix[3][3]) {
 }
 
 void notch_calibrate(const float in_points_x[], const float in_points_y[],
-                     const uint8_t notch_points_x[],
-                     const uint8_t notch_points_y[],
+                     const int8_t notch_points_x[],
+                     const int8_t notch_points_y[],
                      calib_results_t *calib_results) {
     // We always assume that the input and output share a common origin of 0.
     //
@@ -346,7 +346,7 @@ void process_stick(const raw_report_t *raw_report,
     stick_out->x = (int8_t)(clamped_x);
     stick_out->y = (int8_t)(clamped_y);
 
-    if (_cfg_state.report_dbg) {
+    if (_cfg_st.report_dbg) {
         _dbg_report.stick_x_lin = linearized_x;
         _dbg_report.stick_y_lin = linearized_y;
     }

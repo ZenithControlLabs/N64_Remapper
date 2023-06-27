@@ -6,17 +6,41 @@ config_state_t _cfg_st;
 // SETTINGS //
 /////////////
 
-// These settings method aren't publicly exposed (signature isn't in config.h)
-// The USB code interacts with getSetting and setSetting, it doesn't care about
-// functions happening behind the scene.
+void set_setting(setting_id_t st, const uint8_t *buffer) {
+    // notch settings go from 0 (right) counterclockwise to 7 downright
+    if (st <= NOTCH_DOWNRIGHT) {
+        _cfg_st.stick_config.notch_points_x[st] = buffer[0];
+        _cfg_st.stick_config.notch_points_y[st] = buffer[1];
+        // recompute notch calibration
+        notch_calibrate(_cfg_st.stick_config.linearized_points_x,
+                        _cfg_st.stick_config.linearized_points_y,
+                        _cfg_st.stick_config.notch_points_y,
+                        _cfg_st.stick_config.notch_points_y,
+                        &(_cfg_st.calib_results));
+    }
+    switch (st) {
+    case DEBUG_REPORTING:
+        _cfg_st.report_dbg = buffer[0];
+        break;
+    }
+}
 
-void set_notch(int notch, uint8_t x) {}
+uint16_t get_setting(setting_id_t st, uint8_t *buffer) {
+    uint16_t sz = 0;
+    switch (st) {
+    case CMD_GET_CAL_STEP: {
+        buffer[0] = _cfg_st.calibration_step;
+        sz = 1;
+        debug_print("Get cal step..\n");
+        break;
+    }
+    default:
+        sz = 0;
+        break;
+    }
 
-void update_notch_calib() {}
-
-void set_setting(setting_id_t st, const uint8_t *buffer) {}
-
-void get_setting(setting_id_t st, const uint8_t *buffer) {}
+    return sz;
+}
 
 //////////////////
 // CALIBRATION //
@@ -128,22 +152,7 @@ void calibration_finish() {
 ///////////////////
 
 uint16_t send_config_state(uint8_t report_id, uint8_t *buffer,
-                           uint16_t bufsize) {
-    uint16_t sz = 0;
-    switch (report_id) {
-    case CMD_GET_CAL_STEP: {
-        buffer[0] = _cfg_st.calibration_step;
-        sz = 1;
-        debug_print("Get cal step..\n");
-        break;
-    }
-    default:
-        sz = 0;
-        break;
-    }
-
-    return sz;
-}
+                           uint16_t bufsize) {}
 
 // 256k from start of flash
 #define FLASH_OFFSET (256 * 1024)
