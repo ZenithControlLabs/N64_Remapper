@@ -24,7 +24,7 @@
 
 // clang-format off
 
-const uint8_t CMD_SETTING_BASE = 0x80;
+static const uint8_t CMD_SETTING_BASE = 0x80;
 
 // SET report IDs
 typedef enum {
@@ -63,7 +63,7 @@ typedef enum {
 
 // used to check if the flash has been written to by us before
 // or has other data. spells "phobri64" (little endian)
-const uint64_t magic = 0x34366972626f6870;
+static const uint64_t magic = 0x34366972626f6870;
 
 typedef struct {
     int8_t calibration_step;
@@ -74,13 +74,17 @@ typedef struct {
 
 extern config_state_t _cfg_st;
 
+void set_setting(setting_id_t st, const uint8_t *buffer);
+
+uint16_t get_setting(setting_id_t st, uint8_t *buffer);
+
 //////////////////
 // CALIBRATION //
 ////////////////
 
 // Calibration parameters
-const int CALIBRATION_NUM_SAMPLES = 128;
-const int CALIBRATION_NUM_STEPS = NUM_NOTCHES * 2;
+#define CALIBRATION_NUM_SAMPLES 128
+#define CALIBRATION_NUM_STEPS NUM_NOTCHES * 2
 
 void calibration_start();
 

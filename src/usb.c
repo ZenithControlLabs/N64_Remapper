@@ -31,10 +31,6 @@ void tud_hid_report_complete_cb(uint8_t instance, uint8_t const *report,
     (void)instance;
     (void)len;
 
-    if ((report[0] == REPORT_ID_GAMEPAD) && _cfg_state.report_dbg) {
-        tud_hid_report(REPORT_ID_DEBUG, &_dbg_report, sizeof(report));
-    }
-
     return;
 }
 
@@ -61,21 +57,28 @@ void tud_hid_set_report_cb(uint8_t instance, uint8_t report_id,
     switch (report_id) {
     case CMD_START_CALIBRATION:
         calibration_start();
-        break;
+        return;
     case CMD_INC_CAL_STEP:
         calibration_advance();
-        break;
+        return;
     case CMD_DEC_CAL_STEP:
         calibration_undo();
-        break;
+        return;
     case CMD_COMMIT_SETTINGS:
         _please_commit = true;
+        return;
+    default:
         break;
-    case CMD_SET_NOTCH_VALUE:
+    }
+
+    // None of the commands have matched. Check if we are in the settings
+    // report ID range. If not, this isn't a valid report ID.
+
+    if (report_id < CMD_SETTING_BASE) {
         return;
     }
 
-    return;
+    set_setting(report_id - CMD_SETTING_BASE, buffer);
 }
 
 hid_gamepad_report_t convertN64toHIDReport() {
@@ -120,30 +123,17 @@ static void send_hid_report() {
     tud_hid_report(REPORT_ID_GAMEPAD, &report, sizeof(report));
 }
 
-uint16_t send_custom_report(uint8_t cmd) {
-    // if hid is not ready yet let the consumer know
-    if (!tud_hid_ready())
-        return -1;
-
-    tud_hid_report(cmd, NULL, 0);
-}
-
 // Every 10ms, we will sent 1 report for each HID profile (keyboard, mouse etc
 // ..) tud_hid_report_complete_cb() is used to send the next report after
 // previous one is complete
 void hid_task(void) {
-// Poll every 10ms
-#ifdef DEBUG
-    const uint32_t interval_ms = 5;
-#else
-    const uint32_t interval_ms = 10;
-#endif
+    // Poll every 10ms
+    static uint32_t interval_ms = 10;
     static uint32_t start_ms = 0;
 
     if (to_ms_since_boot(get_absolute_time()) - start_ms < interval_ms)
         return; // not enough time
     start_ms += interval_ms;
-
     send_hid_report();
 }
 

@@ -53,7 +53,8 @@ void notch_remap(const float x_in, const float y_in, float *x_out, float *y_out,
                  const calib_results_t *calib_results);
 
 void notch_calibrate(const float in_points_x[], const float in_points_y[],
-                     float notch_points_x[], float notch_points_y[],
+                     const int8_t notch_points_x[],
+                     const int8_t notch_points_y[],
                      calib_results_t *calib_results);
 
 void process_stick(const raw_report_t *raw_report,
