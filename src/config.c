@@ -131,7 +131,7 @@ void calibration_finish() {
     }
 
     notch_calibrate(linearized_points_x, linearized_points_y,
-                    _cfg_st.stick_config.notch_points_y,
+                    _cfg_st.stick_config.notch_points_x,
                     _cfg_st.stick_config.notch_points_y,
                     &(_cfg_st.calib_results));
     debug_print("Calibrated!\n");
@@ -180,6 +180,12 @@ void init_config_state() {
     // load our configuration from flash
     memcpy((uint8_t *)(&_cfg_st), (void *)(XIP_BASE + FLASH_OFFSET),
            sizeof(config_state_t));
+
+    // for now, until we add a method to load stuff from factory
+    for (int i = 0; i < NUM_NOTCHES; i++) {
+        _cfg_st.stick_config.notch_points_x[i] = perfect_notches_x[i];
+        _cfg_st.stick_config.notch_points_y[i] = perfect_notches_y[i];
+    }
 
     _cfg_st.calibration_step = 0; // not calibrating
 }
