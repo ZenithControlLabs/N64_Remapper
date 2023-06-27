@@ -113,27 +113,46 @@ hid_gamepad_report_t convertN64toHIDReport() {
 // USB HID
 //--------------------------------------------------------------------+
 
+// This method will send the next hid report.
+// The way our reports are structured is the following:
+// - If the user has enabled debug reporting, we alternate
+//   between a debug and normal report every 5ms.
+// - If they have not, then we still run this every 5ms,
+//   but we simply do nothing when we'd normally send debug,
+//   meaning we send standard reports every 10ms.
 static void send_hid_report() {
+    // Keep track of whether or not we are sending a debug report next
+    static bool debug_next = false;
     // skip if hid is not ready yet
     if (!tud_hid_ready())
         return;
-
-    hid_gamepad_report_t report = convertN64toHIDReport();
-
-    tud_hid_report(REPORT_ID_GAMEPAD, &report, sizeof(report));
+    if (debug_next) {
+        if (_cfg_st.report_dbg) {
+            // we don't care that much about locking for debug reports.
+            tud_hid_report(REPORT_ID_DEBUG, &_dbg_report,
+                           sizeof(hid_gamepad_report_t));
+        }
+        // otherwise, dont do anything. we just wait out the 5ms
+    } else {
+        hid_gamepad_report_t report = convertN64toHIDReport();
+        tud_hid_report(REPORT_ID_GAMEPAD, &report,
+                       sizeof(hid_gamepad_report_t));
+    }
+    debug_next = !debug_next;
 }
 
-// Every 10ms, we will sent 1 report for each HID profile (keyboard, mouse etc
-// ..) tud_hid_report_complete_cb() is used to send the next report after
-// previous one is complete
+// We run the hid_report task every 5ms,
+// but we only send a report every 5ms if debugging is enabled.
+// See send_hid_report()'s comment for more detail.
 void hid_task(void) {
-    // Poll every 10ms
-    static uint32_t interval_ms = 10;
+    // Poll every 5ms
+    const uint32_t interval_ms = 5;
     static uint32_t start_ms = 0;
 
     if (to_ms_since_boot(get_absolute_time()) - start_ms < interval_ms)
         return; // not enough time
     start_ms += interval_ms;
+
     send_hid_report();
 }
 
