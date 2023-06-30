@@ -30,23 +30,22 @@ void create_default_n64_report(void) {
     };
 }
 
-void from_raw_report(const raw_report_t *raw_report,
-                     processed_stick_t *stick_out) {
+void update_n64_report(const buttons_t *btn, processed_stick_t *stick_out) {
     mutex_enter_blocking(&_report_lock);
-    _report = (n64_report_t){.dpad_right = raw_report->dpad_right,
-                             .dpad_left = raw_report->dpad_left,
-                             .dpad_down = raw_report->dpad_down,
-                             .dpad_up = raw_report->dpad_up,
-                             .start = raw_report->start,
-                             .z = raw_report->zl,
-                             .b = raw_report->b,
-                             .a = raw_report->a,
-                             .c_right = raw_report->c_right,
-                             .c_left = raw_report->c_left,
-                             .c_up = raw_report->c_up,
-                             .c_down = raw_report->c_down,
-                             .r = raw_report->r,
-                             .l = raw_report->l,
+    _report = (n64_report_t){.dpad_right = btn->dpad_right,
+                             .dpad_left = btn->dpad_left,
+                             .dpad_down = btn->dpad_down,
+                             .dpad_up = btn->dpad_up,
+                             .start = btn->start,
+                             .z = btn->zl,
+                             .b = btn->b,
+                             .a = btn->a,
+                             .c_right = btn->c_right,
+                             .c_left = btn->c_left,
+                             .c_up = btn->c_up,
+                             .c_down = btn->c_down,
+                             .r = btn->r,
+                             .l = btn->l,
                              .stick_x = stick_out->x,
                              .stick_y = stick_out->y};
     mutex_exit(&_report_lock);
@@ -58,8 +57,10 @@ void from_raw_report(const raw_report_t *raw_report,
 // We read the raw hardware, and process any special commands, then process the
 // stick data using our calibration steps.
 void process_controller() {
-    // always read raw hardware report first
-    raw_report_t r_report = read_hardware(false);
+    // always start out the loop by doing our
+    // multisample ADC read.
+
+    buttons_t r_report = read_hardware(false);
 
     if (_cfg_st.report_dbg) {
         _dbg_report.stick_x_raw = r_report.stick_x;
@@ -82,6 +83,6 @@ void process_controller() {
     } else {
         processed_stick_t stick_out;
         process_stick(&r_report, &(_cfg_st.calib_results), &stick_out);
-        from_raw_report(&r_report, &stick_out);
+        from_btn(&r_report, &stick_out);
     }
 }

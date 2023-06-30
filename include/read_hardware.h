@@ -1,9 +1,11 @@
 #ifndef _READ_HARDWARE_H
 #define _READ_HARDWARE_H
 
-#define ADC_MAX 4096.0
-
 #include "Phobri64.h"
+
+const uint16_t ADC_MAX = 4096;
+
+typedef enum { XAXIS, YAXIS } axis_t;
 
 typedef struct __attribute__((packed)) {
     bool a : 1;
@@ -13,7 +15,7 @@ typedef struct __attribute__((packed)) {
     bool l : 1;
     bool zr : 1;
     bool zl : 1;
-    bool reserved0 : 1;
+    bool reserved0 : 1; // padding
 
     bool c_right : 1;
     bool c_left : 1;
@@ -23,18 +25,12 @@ typedef struct __attribute__((packed)) {
     bool dpad_left : 1;
     bool dpad_down : 1;
     bool dpad_up : 1;
+} buttons_t;
 
-    // Units of the following two fields are in voltage (as read by ADC).
-    float stick_x;
-    float stick_y;
-} raw_report_t;
-
-float read_stick_y();
-
-float read_stick_x();
+uint16_t read_ext_adc(axis_t which_axis);
 
 void init_hardware();
 
-raw_report_t read_hardware(bool quick);
+buttons_t read_buttons();
 
 #endif /* _READ_HARDWARE_H */

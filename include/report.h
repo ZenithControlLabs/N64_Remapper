@@ -30,14 +30,15 @@ extern n64_report_t _report;
 extern mutex_t _report_lock;
 
 // Debug reporting features
-#ifdef DEBUG
+#ifdef DEBUG // <<< REMOVE THIS SHIT
 
 typedef struct {
     float stick_x_raw;
     float stick_y_raw;
     float stick_x_lin;
     float stick_y_lin;
-} debug_report_t;
+} debug_report_t; // TODO rename this shit to raw report,
+// then we can report it if debugging reporting is enabled
 
 extern debug_report_t _dbg_report;
 
@@ -45,8 +46,7 @@ extern debug_report_t _dbg_report;
 
 void create_default_n64_report(void);
 
-void from_raw_report(const raw_report_t *raw_report,
-                     processed_stick_t *stick_out);
+void update_n64_report(const buttons_t *btn, processed_stick_t *stick_out);
 
 void process_controller();
 

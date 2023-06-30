@@ -3,10 +3,10 @@
 mutex_t adc_mtx;
 
 // for external MCP3202 adc, 12 bit
-uint16_t __time_critical_func(read_ext_adc)(bool isXaxis) {
+uint16_t __time_critical_func(read_ext_adc)(axis_t which_axis) {
     mutex_enter_blocking(&adc_mtx);
     const uint8_t config_val =
-        (STICK_FLIP_ADC_CHANNELS ^ isXaxis) ? 0xD0 : 0xF0;
+        (STICK_FLIP_ADC_CHANNELS ^ (which_axis == XAXIS)) ? 0xD0 : 0xF0;
     uint8_t data_buf[3];
     gpio_put(STICK_SPI_CS, 0);
 
@@ -67,8 +67,8 @@ void init_hardware() {
     return;
 }
 
-raw_report_t read_hardware(bool quick) {
-    raw_report_t report = {
+buttons_t read_buttons() {
+    buttons_t btn = {
         .a = 0,
         .b = 0,
         .start = 0,
@@ -85,32 +85,25 @@ raw_report_t read_hardware(bool quick) {
         .dpad_left = 0,
         .dpad_down = 0,
         .dpad_up = 0,
-        .stick_x = 0.0f,
-        .stick_y = 0.0f,
     };
 
-    if (!quick) {
-        report.stick_x = read_stick_x();
-        report.stick_y = read_stick_y();
-    }
-
-    report.a = !gpio_get(BTN_A_PIN);
-    report.b = !gpio_get(BTN_B_PIN);
-    report.start = !gpio_get(BTN_START_PIN);
-    report.r = !gpio_get(BTN_R_PIN);
-    report.l = !gpio_get(BTN_L_PIN);
+    btn.a = !gpio_get(BTN_A_PIN);
+    btn.b = !gpio_get(BTN_B_PIN);
+    btn.start = !gpio_get(BTN_START_PIN);
+    btn.r = !gpio_get(BTN_R_PIN);
+    btn.l = !gpio_get(BTN_L_PIN);
 #ifdef BTN_ZR_PIN
-    report.zr = !gpio_get(BTN_ZR_PIN);
+    btn.zr = !gpio_get(BTN_ZR_PIN);
 #endif
-    report.zl = !gpio_get(BTN_ZL_PIN);
-    report.c_right = !gpio_get(BTN_CR_PIN);
-    report.c_left = !gpio_get(BTN_CL_PIN);
-    report.c_up = !gpio_get(BTN_CU_PIN);
-    report.c_down = !gpio_get(BTN_CD_PIN);
-    report.dpad_right = !gpio_get(BTN_DR_PIN);
-    report.dpad_left = !gpio_get(BTN_DL_PIN);
-    report.dpad_down = !gpio_get(BTN_DD_PIN);
-    report.dpad_up = !gpio_get(BTN_DU_PIN);
+    btn.zl = !gpio_get(BTN_ZL_PIN);
+    btn.c_right = !gpio_get(BTN_CR_PIN);
+    btn.c_left = !gpio_get(BTN_CL_PIN);
+    btn.c_up = !gpio_get(BTN_CU_PIN);
+    btn.c_down = !gpio_get(BTN_CD_PIN);
+    btn.dpad_right = !gpio_get(BTN_DR_PIN);
+    btn.dpad_left = !gpio_get(BTN_DL_PIN);
+    btn.dpad_down = !gpio_get(BTN_DD_PIN);
+    btn.dpad_up = !gpio_get(BTN_DU_PIN);
 
-    return report;
+    return btn;
 }
