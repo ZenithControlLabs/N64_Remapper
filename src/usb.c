@@ -40,10 +40,24 @@ void tud_hid_report_complete_cb(uint8_t instance, uint8_t const *report,
 uint16_t tud_hid_get_report_cb(uint8_t instance, uint8_t report_id,
                                hid_report_type_t report_type, uint8_t *buffer,
                                uint16_t bufsize) {
-    // TODO not Implemented
     (void)report_type;
 
-    return send_config_state(report_id, buffer, bufsize);
+    switch (report_id) {
+    case CMD_GET_CAL_STEP:
+        buffer[0] = _cfg_st.calibration_step;
+        return 1;
+    default:
+        break;
+    }
+
+    // None of the commands have matched. Check if we are in the settings
+    // report ID range. If not, this isn't a valid report ID.
+
+    if (report_id < CMD_SETTING_BASE) {
+        return 0;
+    }
+
+    return get_setting(report_id - CMD_SETTING_BASE, buffer);
 }
 
 void tud_hid_set_report_cb(uint8_t instance, uint8_t report_id,

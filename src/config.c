@@ -26,19 +26,8 @@ void set_setting(setting_id_t st, const uint8_t *buffer) {
 }
 
 uint16_t get_setting(setting_id_t st, uint8_t *buffer) {
+    // no settings implemented here at the moment (#4)
     uint16_t sz = 0;
-    switch (st) {
-    case CMD_GET_CAL_STEP: {
-        buffer[0] = _cfg_st.calibration_step;
-        sz = 1;
-        debug_print("Get cal step..\n");
-        break;
-    }
-    default:
-        sz = 0;
-        break;
-    }
-
     return sz;
 }
 
