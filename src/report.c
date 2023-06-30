@@ -60,6 +60,11 @@ void from_raw_report(const raw_report_t *raw_report,
 void process_controller() {
     // always read raw hardware report first
     raw_report_t r_report = read_hardware(false);
+
+    if (_cfg_st.report_dbg) {
+        _dbg_report.stick_x_raw = r_report.stick_x;
+        _dbg_report.stick_y_raw = r_report.stick_y;
+    }
 #ifdef DEBUG
     // command to reset the controller without having to replug usb, for
     // debugging purposes
@@ -74,10 +79,6 @@ void process_controller() {
         // calibration, you could add button debouncing logic to trigger
         // calibration_advance/calibration_undo here.
         create_default_n64_report();
-#ifdef DEBUG
-        _dbg_report.stick_x_raw = r_report.stick_x;
-        _dbg_report.stick_y_raw = r_report.stick_y;
-#endif
     } else {
         processed_stick_t stick_out;
         process_stick(&r_report, &(_cfg_st.calib_results), &stick_out);

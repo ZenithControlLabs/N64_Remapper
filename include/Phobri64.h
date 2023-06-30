@@ -46,7 +46,7 @@
 // some reason, even when it calls multicore_lockout_victim_init(). So, when we
 // need to stop the other core and commit the settings, we will just set a flag
 // to tell core 1 to do it.
-extern bool _pleaseCommit;
+extern bool _please_commit;
 
 // Enable or disable printf based on whether or not we're making a debug build.
 #ifdef DEBUG

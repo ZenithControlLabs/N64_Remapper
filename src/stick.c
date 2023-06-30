@@ -1,8 +1,10 @@
 #include "Phobri64.h"
 #include "polyfit.h"
 
-// FIXME - this whole file need to actually document what the units are in the
-// signal chain It's impossible to read code like this without knowing what the
+// FIXME - this whole file needs to actually document what the units are in the
+// signal chain
+//
+// It's impossible to read code like this without knowing what the
 // units actually mean. For example, if you have a float, does it go from -1 to
 // 1, 0 to 1, -127 to 127? Just the type is not enough. Ideally, the types would
 // be separate and you have to manually cast them. A typedef should be
@@ -243,7 +245,8 @@ void print_mtx(const float matrix[3][3]) {
 }
 
 void notch_calibrate(const float in_points_x[], const float in_points_y[],
-                     float notch_points_x[], float notch_points_y[],
+                     const int8_t notch_points_x[],
+                     const int8_t notch_points_y[],
                      calib_results_t *calib_results) {
     // We always assume that the input and output share a common origin of 0.
     //
@@ -273,11 +276,11 @@ void notch_calibrate(const float in_points_x[], const float in_points_y[],
         pointsIn[2][1] = 1;
         pointsIn[2][2] = 1;
         pointsOut[0][0] = 0;
-        pointsOut[0][1] = notch_points_x[cur];
-        pointsOut[0][2] = notch_points_x[next];
+        pointsOut[0][1] = (float)notch_points_x[cur];
+        pointsOut[0][2] = (float)notch_points_x[next];
         pointsOut[1][0] = 0;
-        pointsOut[1][1] = notch_points_y[cur];
-        pointsOut[1][2] = notch_points_y[next];
+        pointsOut[1][1] = (float)notch_points_y[cur];
+        pointsOut[1][2] = (float)notch_points_y[next];
         pointsOut[2][0] = 1;
         pointsOut[2][1] = 1;
         pointsOut[2][2] = 1;
@@ -343,10 +346,8 @@ void process_stick(const raw_report_t *raw_report,
     stick_out->x = (int8_t)(clamped_x);
     stick_out->y = (int8_t)(clamped_y);
 
-#ifdef DEBUG
-    _dbg_report.stick_x_raw = raw_report->stick_x;
-    _dbg_report.stick_y_raw = raw_report->stick_y;
-    _dbg_report.stick_x_lin = linearized_x;
-    _dbg_report.stick_y_lin = linearized_y;
-#endif
+    if (_cfg_st.report_dbg) {
+        _dbg_report.stick_x_lin = linearized_x;
+        _dbg_report.stick_y_lin = linearized_y;
+    }
 }

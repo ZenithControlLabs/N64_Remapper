@@ -32,6 +32,13 @@ typedef struct {
 // Since a perfect hori would be symmetrical, this applies for X and Y.
 static const double perfect_angles[] = {-100, -75, 0, 75, 100};
 
+// Center is ommitted here because it is assumed to be 0.
+// The offset to ensure this is true takes place in the linearization step.
+static const float perfect_notches_x[] = {100, 75, 0, -75, -100, -75, 0, 75};
+static const float perfect_notches_y[] = {0, 75, 100, 75, 0, -75, -100, -75};
+
+// Why do we have essentially the same information encoded in the above arrays?
+
 void fold_center_points(const float raw_cal_points_x[],
                         const float raw_cal_points_y[],
                         float cleaned_points_x[], float cleaned_points_y[]);
@@ -46,7 +53,8 @@ void notch_remap(const float x_in, const float y_in, float *x_out, float *y_out,
                  const calib_results_t *calib_results);
 
 void notch_calibrate(const float in_points_x[], const float in_points_y[],
-                     float notch_points_x[], float notch_points_y[],
+                     const int8_t notch_points_x[],
+                     const int8_t notch_points_y[],
                      calib_results_t *calib_results);
 
 void process_stick(const raw_report_t *raw_report,

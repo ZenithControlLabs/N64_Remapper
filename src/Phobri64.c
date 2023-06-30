@@ -1,15 +1,15 @@
 #include "Phobri64.h"
 
-bool _pleaseCommit = false;
+bool _please_commit = false;
 
 void second_core() {
     create_default_n64_report();
 
     debug_print("Phobri64 Initialization\n");
     while (true) {
-        if (_pleaseCommit) {
+        if (_please_commit) {
             commit_config_state();
-            _pleaseCommit = false;
+            _please_commit = false;
         }
 
         process_controller();

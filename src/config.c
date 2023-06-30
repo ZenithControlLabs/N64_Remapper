@@ -2,6 +2,35 @@
 
 config_state_t _cfg_st;
 
+///////////////
+// SETTINGS //
+/////////////
+
+void set_setting(setting_id_t st, const uint8_t *buffer) {
+    // notch settings go from 0 (right) counterclockwise to 7 downright
+    if (st <= NOTCH_DOWNRIGHT) {
+        _cfg_st.stick_config.notch_points_x[st] = buffer[0];
+        _cfg_st.stick_config.notch_points_y[st] = buffer[1];
+        // recompute notch calibration
+        notch_calibrate(_cfg_st.stick_config.linearized_points_x,
+                        _cfg_st.stick_config.linearized_points_y,
+                        _cfg_st.stick_config.notch_points_y,
+                        _cfg_st.stick_config.notch_points_y,
+                        &(_cfg_st.calib_results));
+    }
+    switch (st) {
+    case DEBUG_REPORTING:
+        _cfg_st.report_dbg = buffer[0];
+        break;
+    }
+}
+
+uint16_t get_setting(setting_id_t st, uint8_t *buffer) {
+    // no settings implemented here at the moment (#4)
+    uint16_t sz = 0;
+    return sz;
+}
+
 //////////////////
 // CALIBRATION //
 ////////////////
@@ -62,6 +91,7 @@ void calibration_undo() {
 }
 
 void calibration_finish() {
+    // TODO comment all of this and make it decent
     // We're done calibrating. Do the math to save our calibration parameters
     float cleaned_points_x[NUM_NOTCHES + 1];
     float cleaned_points_y[NUM_NOTCHES + 1];
@@ -80,16 +110,19 @@ void calibration_finish() {
     }
     linearize_cal(cleaned_points_x, cleaned_points_y, linearized_points_x,
                   linearized_points_y, &(_cfg_st.calib_results));
+    // Copy the linearized points we have just found to phobri's internal data
+    // sturcture.
     for (int i = 0; i < NUM_NOTCHES; i++) {
+        _cfg_st.stick_config.linearized_points_x[i] = linearized_points_x[i];
+        _cfg_st.stick_config.linearized_points_y[i] = linearized_points_y[i];
         debug_print("Linearized point:  %d; (x,y) = (%f, %f)\n", i,
                     linearized_points_x[i], linearized_points_y[i]);
     }
 
-    // Center is also assumed to be 0 here.
-    float perfect_notches_x[] = {100, 75, 0, -75, -100, -75, 0, 75};
-    float perfect_notches_y[] = {0, 75, 100, 75, 0, -75, -100, -75};
-    notch_calibrate(linearized_points_x, linearized_points_y, perfect_notches_x,
-                    perfect_notches_y, &(_cfg_st.calib_results));
+    notch_calibrate(linearized_points_x, linearized_points_y,
+                    _cfg_st.stick_config.notch_points_x,
+                    _cfg_st.stick_config.notch_points_y,
+                    &(_cfg_st.calib_results));
     debug_print("Calibrated!\n");
     debug_print("X coeffs: %f %f %f %f, Y coeffs: %f %f %f %f\n",
                 _cfg_st.calib_results.fit_coeffs_x[0],
@@ -108,22 +141,7 @@ void calibration_finish() {
 ///////////////////
 
 uint16_t send_config_state(uint8_t report_id, uint8_t *buffer,
-                           uint16_t bufsize) {
-    uint16_t sz = 0;
-    switch (report_id) {
-    case CMD_GET_CAL_STEP: {
-        buffer[0] = _cfg_st.calibration_step;
-        sz = 1;
-        debug_print("Get cal step..\n");
-        break;
-    }
-    default:
-        sz = 0;
-        break;
-    }
-
-    return sz;
-}
+                           uint16_t bufsize) {}
 
 // 256k from start of flash
 #define FLASH_OFFSET (256 * 1024)
@@ -151,6 +169,12 @@ void init_config_state() {
     // load our configuration from flash
     memcpy((uint8_t *)(&_cfg_st), (void *)(XIP_BASE + FLASH_OFFSET),
            sizeof(config_state_t));
+
+    // for now, until we add a method to load stuff from factory
+    for (int i = 0; i < NUM_NOTCHES; i++) {
+        _cfg_st.stick_config.notch_points_x[i] = perfect_notches_x[i];
+        _cfg_st.stick_config.notch_points_y[i] = perfect_notches_y[i];
+    }
 
     _cfg_st.calibration_step = 0; // not calibrating
 }
