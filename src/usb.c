@@ -143,7 +143,7 @@ static void send_hid_report() {
     if (debug_next) {
         if (_cfg_st.report_dbg) {
             // we don't care that much about locking for debug reports.
-            tud_hid_report(REPORT_ID_DEBUG, &_dbg_report,
+            tud_hid_report(REPORT_ID_DEBUG, &_raw,
                            sizeof(hid_gamepad_report_t));
         }
         // otherwise, dont do anything. we just wait out the 5ms

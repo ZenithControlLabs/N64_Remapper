@@ -19,9 +19,44 @@ uint16_t __time_critical_func(read_ext_adc)(axis_t which_axis) {
     return tempValue;
 }
 
-inline float read_stick_x() { return read_ext_adc(true) / ADC_MAX; }
+raw_stick_t read_stick_multisample() {
+    static uint64_t last_micros = 0;
+    static bool initialized = false;
+    // C doesnt allow fn calls in static initializers
+    if (!initialized) {
+        last_micros = time_us_64();
+        initialized = true;
+    }
+    raw_stick_t raw = {.stick_x_raw = 0.0,
+                       .stick_y_raw = 0.0,
+                       .stick_x_lin = 0.0,
+                       .stick_y_lin = 0.0};
 
-inline float read_stick_y() { return read_ext_adc(false) / ADC_MAX; }
+    uint32_t adc_count;
+    uint32_t adc_sum_x;
+    uint32_t adc_sum_y;
+
+    uint64_t before_micros = time_us_64();
+    uint64_t after_micros;
+    uint64_t adc_delta;
+    do {
+        adc_count++;
+        adc_sum_x += read_ext_adc(XAXIS);
+        adc_sum_y += read_ext_adc(YAXIS);
+        after_micros = time_us_64();
+        adc_delta = after_micros - before_micros;
+        before_micros = after_micros;
+    } while ((after_micros - last_micros) < (1000 - adc_delta));
+
+    // Then we spinlock to get the 1 kHz more exactly.
+    while (after_micros - last_micros < 1000) {
+        after_micros = time_us_64();
+    }
+    last_micros += 1000;
+
+    raw.stick_x_raw = (float)adc_sum_x / ((float)(ADC_MAX * adc_count));
+    raw.stick_y_raw = (float)adc_sum_y / ((float)(ADC_MAX * adc_count));
+}
 
 static inline void init_btn_pin(uint pin) {
     gpio_init(pin);

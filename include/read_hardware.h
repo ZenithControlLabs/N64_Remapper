@@ -3,7 +3,7 @@
 
 #include "Phobri64.h"
 
-const uint16_t ADC_MAX = 4096;
+#define ADC_MAX 4096
 
 typedef enum { XAXIS, YAXIS } axis_t;
 
@@ -28,6 +28,8 @@ typedef struct __attribute__((packed)) {
 } buttons_t;
 
 uint16_t read_ext_adc(axis_t which_axis);
+
+raw_stick_t read_stick_multisample();
 
 void init_hardware();
 

@@ -1,11 +1,11 @@
 #include "Phobri64.h"
 
+// The raw stick is global so it can be reported thru USB
+// as a debugging feature.
+raw_stick_t _raw;
+
 n64_report_t _report;
 mutex_t _report_lock;
-
-#ifdef DEBUG
-debug_report_t _dbg_report;
-#endif
 
 void create_default_n64_report(void) {
     _report = (n64_report_t){
@@ -59,17 +59,14 @@ void update_n64_report(const buttons_t *btn, processed_stick_t *stick_out) {
 void process_controller() {
     // always start out the loop by doing our
     // multisample ADC read.
+    _raw = read_stick_multisample();
 
-    buttons_t r_report = read_hardware(false);
+    buttons_t btn = read_buttons();
 
-    if (_cfg_st.report_dbg) {
-        _dbg_report.stick_x_raw = r_report.stick_x;
-        _dbg_report.stick_y_raw = r_report.stick_y;
-    }
 #ifdef DEBUG
     // command to reset the controller without having to replug usb, for
     // debugging purposes
-    if (r_report.l & r_report.zl & r_report.r) {
+    if (btn.l & btn.zl & btn.r) {
         reset_usb_boot(0, 0);
     }
 #endif
@@ -82,7 +79,7 @@ void process_controller() {
         create_default_n64_report();
     } else {
         processed_stick_t stick_out;
-        process_stick(&r_report, &(_cfg_st.calib_results), &stick_out);
-        from_btn(&r_report, &stick_out);
+        process_stick(&_raw, &(_cfg_st.calib_results), &stick_out);
+        update_n64_report(&btn, &stick_out);
     }
 }

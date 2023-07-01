@@ -3,6 +3,8 @@
 
 #include "Phobri64.h"
 
+extern raw_stick_t _raw;
+
 typedef struct __attribute__((packed)) {
     bool dpad_right : 1;
     bool dpad_left : 1;
@@ -28,21 +30,6 @@ typedef struct __attribute__((packed)) {
 
 extern n64_report_t _report;
 extern mutex_t _report_lock;
-
-// Debug reporting features
-#ifdef DEBUG // <<< REMOVE THIS SHIT
-
-typedef struct {
-    float stick_x_raw;
-    float stick_y_raw;
-    float stick_x_lin;
-    float stick_y_lin;
-} debug_report_t; // TODO rename this shit to raw report,
-// then we can report it if debugging reporting is enabled
-
-extern debug_report_t _dbg_report;
-
-#endif
 
 void create_default_n64_report(void);
 

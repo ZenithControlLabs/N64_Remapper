@@ -29,7 +29,7 @@
 
 // Define this to print matrix computation results to terminal (probably not
 // very useful)
-//#define MATRIX_DEBUGGING
+// #define MATRIX_DEBUGGING
 
 #ifdef MATRIX_DEBUGGING
 
@@ -80,7 +80,7 @@ int polyfit(int pointCount, const double *xValues, const double *yValues,
 
     showMatrix(pMatA, pointCount, coefficientCount);
 
-    double *pMatB = yValues; // 1 col, pointCount rows
+    const double *pMatB = yValues; // 1 col, pointCount rows
 
     // Make the transpose of matrix A:
     double pMatAT[coefficientCount][pointCount];

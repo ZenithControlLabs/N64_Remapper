@@ -21,6 +21,13 @@ typedef struct {
     float linearized_points_y[NUM_NOTCHES];
 } stick_config_t;
 
+typedef struct {
+    float stick_x_raw;
+    float stick_y_raw;
+    float stick_x_lin;
+    float stick_y_lin;
+} raw_stick_t;
+
 // FIXME better name
 typedef struct {
     int8_t x;
@@ -57,8 +64,7 @@ void notch_calibrate(const float in_points_x[], const float in_points_y[],
                      const int8_t notch_points_y[],
                      calib_results_t *calib_results);
 
-void process_stick(const raw_report_t *raw_report,
-                   calib_results_t *calib_results,
+void process_stick(raw_stick_t *raw, const calib_results_t *calib_results,
                    processed_stick_t *stick_out);
 
 #endif /* _STICK_H */
