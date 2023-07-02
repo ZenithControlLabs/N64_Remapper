@@ -57,9 +57,14 @@ void update_n64_report(const buttons_t *btn, processed_stick_t *stick_out) {
 // We read the raw hardware, and process any special commands, then process the
 // stick data using our calibration steps.
 void process_controller() {
-    // always start out the loop by doing our
-    // multisample ADC read.
+
+    // always start out the loop doing our multisample ADC read.
+    // the only situation that could cause problems is when we're
+    // calibrating and the other core is trying to read the ADC.
+    // we don't want them to both read, so we wrap them in a critical section.
+    mutex_enter_blocking(&adc_mtx);
     _raw = read_stick_multisample();
+    mutex_exit(&adc_mtx);
 
     buttons_t btn = read_buttons();
 
@@ -70,6 +75,7 @@ void process_controller() {
         reset_usb_boot(0, 0);
     }
 #endif
+
     if (_cfg_st.calibration_step > 0) {
         // We have nothing to do. Calibration is handled through USB commands.
         // Just communicate default controller state.

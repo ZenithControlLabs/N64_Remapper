@@ -41,8 +41,8 @@ static const double perfect_angles[] = {-100, -75, 0, 75, 100};
 
 // Center is ommitted here because it is assumed to be 0.
 // The offset to ensure this is true takes place in the linearization step.
-static const float perfect_notches_x[] = {100, 75, 0, -75, -100, -75, 0, 75};
-static const float perfect_notches_y[] = {0, 75, 100, 75, 0, -75, -100, -75};
+static const float perfect_notches_x[] = {85, 70, 0, -70, -85, -70, 0, 70};
+static const float perfect_notches_y[] = {0, 70, 85, 70, 0, -70, -85, -70};
 
 // Why do we have essentially the same information encoded in the above arrays?
 

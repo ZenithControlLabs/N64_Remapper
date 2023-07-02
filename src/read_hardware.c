@@ -1,10 +1,6 @@
 #include "Phobri64.h"
-
-mutex_t adc_mtx;
-
 // for external MCP3202 adc, 12 bit
 uint16_t __time_critical_func(read_ext_adc)(axis_t which_axis) {
-    mutex_enter_blocking(&adc_mtx);
     const uint8_t config_val =
         (STICK_FLIP_ADC_CHANNELS ^ (which_axis == XAXIS)) ? 0xD0 : 0xF0;
     uint8_t data_buf[3];
@@ -15,7 +11,6 @@ uint16_t __time_critical_func(read_ext_adc)(axis_t which_axis) {
         ((data_buf[0] & 0x07) << 9) | data_buf[1] << 1 | data_buf[2] >> 7;
 
     gpio_put(STICK_SPI_CS, 1);
-    mutex_exit(&adc_mtx);
     return tempValue;
 }
 
@@ -32,13 +27,15 @@ raw_stick_t read_stick_multisample() {
                        .stick_x_lin = 0.0,
                        .stick_y_lin = 0.0};
 
-    uint32_t adc_count;
-    uint32_t adc_sum_x;
-    uint32_t adc_sum_y;
+    uint32_t adc_count = 0;
+    uint32_t adc_sum_x = 0;
+    uint32_t adc_sum_y = 0;
 
     uint64_t before_micros = time_us_64();
     uint64_t after_micros;
     uint64_t adc_delta;
+    // debug_print("%lld %lld\n", last_micros, before_micros);
+
     do {
         adc_count++;
         adc_sum_x += read_ext_adc(XAXIS);
@@ -49,13 +46,17 @@ raw_stick_t read_stick_multisample() {
     } while ((after_micros - last_micros) < (1000 - adc_delta));
 
     // Then we spinlock to get the 1 kHz more exactly.
-    while (after_micros - last_micros < 1000) {
+    while ((after_micros - last_micros) < 1000) {
         after_micros = time_us_64();
     }
-    last_micros += 1000;
+    last_micros = time_us_64();
 
     raw.stick_x_raw = (float)adc_sum_x / ((float)(ADC_MAX * adc_count));
     raw.stick_y_raw = (float)adc_sum_y / ((float)(ADC_MAX * adc_count));
+    // debug_print("%d %d %d\n", adc_sum_x, adc_sum_y, adc_count);
+    // debug_print("%d\n", adc_count);
+
+    return raw;
 }
 
 static inline void init_btn_pin(uint pin) {
@@ -98,7 +99,6 @@ void init_hardware() {
     gpio_put(CSTICK_SPI_CS, 1);
 #endif
 
-    mutex_init(&adc_mtx);
     return;
 }
 

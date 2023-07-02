@@ -38,6 +38,8 @@ uint16_t get_setting(setting_id_t st, uint8_t *buffer) {
 float raw_cal_points_x[CALIBRATION_NUM_STEPS];
 float raw_cal_points_y[CALIBRATION_NUM_STEPS];
 
+mutex_t adc_mtx;
+
 void calibration_start() {
     // if for some reason start_calibration is sent after it is already started,
     // just ignore the command
@@ -60,10 +62,13 @@ void calibration_advance() {
     uint32_t y = 0;
     // Taking average of readings over CALIBRATION_NUM_SAMPLES number of
     // samples.
+    // Hold the ADC mutex in this time
+    mutex_enter_blocking(&adc_mtx);
     for (int i = 0; i < CALIBRATION_NUM_SAMPLES; i++) {
         x += read_ext_adc(XAXIS);
         y += read_ext_adc(YAXIS);
     }
+    mutex_exit(&adc_mtx);
     float xf = (float)x / ((float)(ADC_MAX * CALIBRATION_NUM_SAMPLES));
     float yf = (float)y / ((float)(ADC_MAX * CALIBRATION_NUM_SAMPLES));
 
@@ -173,6 +178,8 @@ void init_config_state() {
         _cfg_st.stick_config.notch_points_x[i] = perfect_notches_x[i];
         _cfg_st.stick_config.notch_points_y[i] = perfect_notches_y[i];
     }
+
+    mutex_init(&adc_mtx);
 
     _cfg_st.calibration_step = 0; // not calibrating
 }
