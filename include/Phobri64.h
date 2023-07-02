@@ -25,9 +25,10 @@
 /////////////////////
 // Local includes //
 ///////////////////
-// these two need to go first to avoid compile errors
+// this one needs to go first to avoid compile errors
+#include "stick.h" // Where all the stick math lives.
+// and this second
 #include "read_hardware.h" // Interfacing with the hardware on board (ADCs, GPIO)
-#include "stick.h"         // Where all the stick math lives.
 
 #include "config.h" // Everything related to the config of the stick. Calibration procedure, settings, etc.
 #include "joybus.h" // Handle joybus comms. Take in a controller report structure as input.
@@ -36,10 +37,10 @@
 
 // This was planned but to keep things simple for now the
 // flash storage fns are called in control.c in the commit_settings function.
-//#include "storage.h" // Responsible for saving stick settings.
+// #include "storage.h" // Responsible for saving stick settings.
 
 // Hardware include - uncomment these based on the RP2040 board you are using!
-//#include "hw/phob2_debug.h"
+// #include "hw/phob2_debug.h"
 #include "hw/phobri_proto.h"
 
 // Core 1 doesn't like to be interrupted with multicore_lockout_blocking for

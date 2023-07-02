@@ -38,6 +38,8 @@ uint16_t get_setting(setting_id_t st, uint8_t *buffer) {
 float raw_cal_points_x[CALIBRATION_NUM_STEPS];
 float raw_cal_points_y[CALIBRATION_NUM_STEPS];
 
+mutex_t adc_mtx;
+
 void calibration_start() {
     // if for some reason start_calibration is sent after it is already started,
     // just ignore the command
@@ -56,20 +58,24 @@ void calibration_advance() {
         return;
 
     // Capturing the current notch and moving to the next one.
-    float x = 0;
-    float y = 0;
+    uint32_t x = 0;
+    uint32_t y = 0;
     // Taking average of readings over CALIBRATION_NUM_SAMPLES number of
     // samples.
+    // Hold the ADC mutex in this time
+    mutex_enter_blocking(&adc_mtx);
     for (int i = 0; i < CALIBRATION_NUM_SAMPLES; i++) {
-        x += read_stick_x();
-        y += read_stick_y();
+        x += read_ext_adc(XAXIS);
+        y += read_ext_adc(YAXIS);
     }
-    x /= (float)CALIBRATION_NUM_SAMPLES;
-    y /= (float)CALIBRATION_NUM_SAMPLES;
+    mutex_exit(&adc_mtx);
+    float xf = (float)x / ((float)(ADC_MAX * CALIBRATION_NUM_SAMPLES));
+    float yf = (float)y / ((float)(ADC_MAX * CALIBRATION_NUM_SAMPLES));
 
-    raw_cal_points_x[_cfg_st.calibration_step - 1] = x;
-    raw_cal_points_y[_cfg_st.calibration_step - 1] = y;
-    debug_print("Raw X value collected: %f\nRaw Y value collected: %f\n", x, y);
+    raw_cal_points_x[_cfg_st.calibration_step - 1] = xf;
+    raw_cal_points_y[_cfg_st.calibration_step - 1] = yf;
+    debug_print("Raw X value collected: %f\nRaw Y value collected: %f\n", xf,
+                yf);
     _cfg_st.calibration_step++;
 
     if (_cfg_st.calibration_step > CALIBRATION_NUM_STEPS) {
@@ -149,9 +155,6 @@ void __not_in_flash_func(commit_config_state)() {
     uint8_t settings_buf[FLASH_SECTOR_SIZE];
 
     memcpy(settings_buf, (uint8_t *)(&_cfg_st), sizeof(_cfg_st));
-    for (int i = 0; i < sizeof(_cfg_st); i++) {
-        printf("%c %c\n", settings_buf[i]);
-    }
 
     debug_print("Start lockout..\n");
     multicore_lockout_start_blocking();
@@ -175,6 +178,8 @@ void init_config_state() {
         _cfg_st.stick_config.notch_points_x[i] = perfect_notches_x[i];
         _cfg_st.stick_config.notch_points_y[i] = perfect_notches_y[i];
     }
+
+    mutex_init(&adc_mtx);
 
     _cfg_st.calibration_step = 0; // not calibrating
 }

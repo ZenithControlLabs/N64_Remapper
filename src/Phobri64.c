@@ -13,8 +13,6 @@ void second_core() {
         }
 
         process_controller();
-
-        sleep_us(100);
     }
 }
 
@@ -30,10 +28,9 @@ int main() {
     mutex_init(&_report_lock);
 
     // Startup checks
-    raw_report_t r_report = read_hardware(true);
+    buttons_t btn = read_buttons();
     // reboot in BOOTSEL mode if start is held
-    if (r_report.start) {
-        sleep_ms(1);
+    if (btn.start) {
         reset_usb_boot(0, 0);
     }
 

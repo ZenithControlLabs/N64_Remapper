@@ -327,14 +327,15 @@ void notch_calibrate(const float in_points_x[], const float in_points_y[],
 This method is SUPER important because it captures the signal chain of the stick
 reports. Look here to find the sauce
 */
-void process_stick(const raw_report_t *raw_report,
-                   calib_results_t *calib_results,
+void process_stick(raw_stick_t *raw, const calib_results_t *calib_results,
                    processed_stick_t *stick_out) {
 
     float linearized_x =
-        linearize(raw_report->stick_x, calib_results->fit_coeffs_x);
+        linearize(raw->stick_x_raw, calib_results->fit_coeffs_x);
     float linearized_y =
-        linearize(raw_report->stick_y, calib_results->fit_coeffs_y);
+        linearize(raw->stick_y_raw, calib_results->fit_coeffs_y);
+    raw->stick_x_lin = linearized_x;
+    raw->stick_y_lin = linearized_y;
 
     float remapped_x, remapped_y;
     notch_remap(linearized_x, linearized_y, &remapped_x, &remapped_y,
@@ -345,9 +346,4 @@ void process_stick(const raw_report_t *raw_report,
 
     stick_out->x = (int8_t)(clamped_x);
     stick_out->y = (int8_t)(clamped_y);
-
-    if (_cfg_st.report_dbg) {
-        _dbg_report.stick_x_lin = linearized_x;
-        _dbg_report.stick_y_lin = linearized_y;
-    }
 }

@@ -82,6 +82,8 @@ uint16_t get_setting(setting_id_t st, uint8_t *buffer);
 // CALIBRATION //
 ////////////////
 
+extern mutex_t adc_mtx;
+
 // Calibration parameters
 #define CALIBRATION_NUM_SAMPLES 128
 #define CALIBRATION_NUM_STEPS NUM_NOTCHES * 2

@@ -1,11 +1,11 @@
 #include "Phobri64.h"
 
+// The raw stick is global so it can be reported thru USB
+// as a debugging feature.
+raw_stick_t _raw;
+
 n64_report_t _report;
 mutex_t _report_lock;
-
-#ifdef DEBUG
-debug_report_t _dbg_report;
-#endif
 
 void create_default_n64_report(void) {
     _report = (n64_report_t){
@@ -30,23 +30,22 @@ void create_default_n64_report(void) {
     };
 }
 
-void from_raw_report(const raw_report_t *raw_report,
-                     processed_stick_t *stick_out) {
+void update_n64_report(const buttons_t *btn, processed_stick_t *stick_out) {
     mutex_enter_blocking(&_report_lock);
-    _report = (n64_report_t){.dpad_right = raw_report->dpad_right,
-                             .dpad_left = raw_report->dpad_left,
-                             .dpad_down = raw_report->dpad_down,
-                             .dpad_up = raw_report->dpad_up,
-                             .start = raw_report->start,
-                             .z = raw_report->zl,
-                             .b = raw_report->b,
-                             .a = raw_report->a,
-                             .c_right = raw_report->c_right,
-                             .c_left = raw_report->c_left,
-                             .c_up = raw_report->c_up,
-                             .c_down = raw_report->c_down,
-                             .r = raw_report->r,
-                             .l = raw_report->l,
+    _report = (n64_report_t){.dpad_right = btn->dpad_right,
+                             .dpad_left = btn->dpad_left,
+                             .dpad_down = btn->dpad_down,
+                             .dpad_up = btn->dpad_up,
+                             .start = btn->start,
+                             .z = btn->zl,
+                             .b = btn->b,
+                             .a = btn->a,
+                             .c_right = btn->c_right,
+                             .c_left = btn->c_left,
+                             .c_up = btn->c_up,
+                             .c_down = btn->c_down,
+                             .r = btn->r,
+                             .l = btn->l,
                              .stick_x = stick_out->x,
                              .stick_y = stick_out->y};
     mutex_exit(&_report_lock);
@@ -58,20 +57,25 @@ void from_raw_report(const raw_report_t *raw_report,
 // We read the raw hardware, and process any special commands, then process the
 // stick data using our calibration steps.
 void process_controller() {
-    // always read raw hardware report first
-    raw_report_t r_report = read_hardware(false);
 
-    if (_cfg_st.report_dbg) {
-        _dbg_report.stick_x_raw = r_report.stick_x;
-        _dbg_report.stick_y_raw = r_report.stick_y;
-    }
+    // always start out the loop doing our multisample ADC read.
+    // the only situation that could cause problems is when we're
+    // calibrating and the other core is trying to read the ADC.
+    // we don't want them to both read, so we wrap them in a critical section.
+    mutex_enter_blocking(&adc_mtx);
+    _raw = read_stick_multisample();
+    mutex_exit(&adc_mtx);
+
+    buttons_t btn = read_buttons();
+
 #ifdef DEBUG
     // command to reset the controller without having to replug usb, for
     // debugging purposes
-    if (r_report.l & r_report.zl & r_report.r) {
+    if (btn.l & btn.zl & btn.r) {
         reset_usb_boot(0, 0);
     }
 #endif
+
     if (_cfg_st.calibration_step > 0) {
         // We have nothing to do. Calibration is handled through USB commands.
         // Just communicate default controller state.
@@ -81,7 +85,7 @@ void process_controller() {
         create_default_n64_report();
     } else {
         processed_stick_t stick_out;
-        process_stick(&r_report, &(_cfg_st.calib_results), &stick_out);
-        from_raw_report(&r_report, &stick_out);
+        process_stick(&_raw, &(_cfg_st.calib_results), &stick_out);
+        update_n64_report(&btn, &stick_out);
     }
 }
