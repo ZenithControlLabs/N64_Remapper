@@ -9,12 +9,13 @@ config_state_t _cfg_st;
 void set_setting(setting_id_t st, const uint8_t *buffer) {
     // notch settings go from 0 (right) counterclockwise to 7 downright
     if (st <= NOTCH_DOWNRIGHT) {
+        debug_print("%d %d %d\n", st, buffer[0], buffer[1]);
         _cfg_st.stick_config.notch_points_x[st] = buffer[0];
         _cfg_st.stick_config.notch_points_y[st] = buffer[1];
         // recompute notch calibration
         notch_calibrate(_cfg_st.stick_config.linearized_points_x,
                         _cfg_st.stick_config.linearized_points_y,
-                        _cfg_st.stick_config.notch_points_y,
+                        _cfg_st.stick_config.notch_points_x,
                         _cfg_st.stick_config.notch_points_y,
                         &(_cfg_st.calib_results));
     }
