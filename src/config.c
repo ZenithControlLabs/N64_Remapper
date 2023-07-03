@@ -47,23 +47,23 @@ uint16_t get_setting(setting_id_t st, uint8_t *buffer) {
 float raw_cal_points_x[CALIBRATION_NUM_STEPS];
 float raw_cal_points_y[CALIBRATION_NUM_STEPS];
 
+int8_t calibration_step = 0;
 mutex_t adc_mtx;
 
 void calibration_start() {
     // if for some reason start_calibration is sent after it is already started,
     // just ignore the command
-    if (_cfg_st.calibration_step < 1) {
-        _cfg_st.calibration_step = 1;
+    if (calibration_step < 1) {
+        calibration_step = 1;
         debug_print("Starting calibration!\nCalibration Step [%d/%d]\n",
-                    _cfg_st.calibration_step, CALIBRATION_NUM_STEPS);
+                    calibration_step, CALIBRATION_NUM_STEPS);
     }
 }
 
 void calibration_advance() {
     // failsafe - this function should not be called if incrementing the step
     // would lead to an invalid state
-    if (_cfg_st.calibration_step < 1 ||
-        _cfg_st.calibration_step > CALIBRATION_NUM_STEPS)
+    if (calibration_step < 1 || calibration_step > CALIBRATION_NUM_STEPS)
         return;
 
     // Capturing the current notch and moving to the next one.
@@ -81,16 +81,16 @@ void calibration_advance() {
     float xf = (float)x / ((float)(ADC_MAX * CALIBRATION_NUM_SAMPLES));
     float yf = (float)y / ((float)(ADC_MAX * CALIBRATION_NUM_SAMPLES));
 
-    raw_cal_points_x[_cfg_st.calibration_step - 1] = xf;
-    raw_cal_points_y[_cfg_st.calibration_step - 1] = yf;
+    raw_cal_points_x[calibration_step - 1] = xf;
+    raw_cal_points_y[calibration_step - 1] = yf;
     debug_print("Raw X value collected: %f\nRaw Y value collected: %f\n", xf,
                 yf);
-    _cfg_st.calibration_step++;
+    calibration_step++;
 
-    if (_cfg_st.calibration_step > CALIBRATION_NUM_STEPS) {
+    if (calibration_step > CALIBRATION_NUM_STEPS) {
         calibration_finish();
     } else {
-        debug_print("Calibration Step [%d/%d]\n", _cfg_st.calibration_step,
+        debug_print("Calibration Step [%d/%d]\n", calibration_step,
                     CALIBRATION_NUM_STEPS);
     }
 }
@@ -98,10 +98,10 @@ void calibration_advance() {
 void calibration_undo() {
     // Go back one calibration step, only if we are actually calibrating and not
     // at the beginning.
-    if (_cfg_st.calibration_step > 1) {
-        _cfg_st.calibration_step--;
+    if (calibration_step > 1) {
+        calibration_step--;
     }
-    debug_print("Calibration Step [%d/%d]\n", _cfg_st.calibration_step,
+    debug_print("Calibration Step [%d/%d]\n", calibration_step,
                 CALIBRATION_NUM_STEPS);
 }
 
@@ -148,12 +148,20 @@ void calibration_finish() {
                 _cfg_st.calib_results.fit_coeffs_y[1],
                 _cfg_st.calib_results.fit_coeffs_y[2],
                 _cfg_st.calib_results.fit_coeffs_y[3]);
-    _cfg_st.calibration_step = -1;
+    calibration_step = -1;
 }
 
 /////////////////////
 // STATE HANDLING //
 ///////////////////
+
+void reset_factory_settings() {
+    for (int i = 0; i < NUM_NOTCHES; i++) {
+        _cfg_st.stick_config.notch_points_x[i] = perfect_notches_x[i];
+        _cfg_st.stick_config.notch_points_y[i] = perfect_notches_y[i];
+    }
+    _cfg_st.magic = magic;
+}
 
 // uint16_t send_config_state(uint8_t report_id, uint8_t *buffer,
 //                           uint16_t bufsize) {}
@@ -180,13 +188,15 @@ void init_config_state() {
     memcpy((uint8_t *)(&_cfg_st), (void *)(XIP_BASE + FLASH_OFFSET),
            sizeof(config_state_t));
 
-    // for now, until we add a method to load stuff from factory
-    for (int i = 0; i < NUM_NOTCHES; i++) {
-        _cfg_st.stick_config.notch_points_x[i] = perfect_notches_x[i];
-        _cfg_st.stick_config.notch_points_y[i] = perfect_notches_y[i];
+    // Check to see if our magic number exists at the end of the
+    // struct. This is a very basic sanity check to make sure that
+    // we are working with actual data from a Phobri.
+    if (_cfg_st.magic != magic) {
+        // If not, we will just reset the factory settings.
+        reset_factory_settings();
     }
 
     mutex_init(&adc_mtx);
 
-    _cfg_st.calibration_step = 0; // not calibrating
+    calibration_step = 0; // not calibrating
 }

@@ -66,10 +66,10 @@ typedef enum {
 static const uint64_t magic = 0x34366972626f6870;
 
 typedef struct {
-    int8_t calibration_step;
     calib_results_t calib_results;
     stick_config_t stick_config;
     bool report_dbg;
+    uint64_t magic; // always keep this one last
 } config_state_t;
 
 extern config_state_t _cfg_st;
@@ -82,6 +82,7 @@ uint16_t get_setting(setting_id_t st, uint8_t *buffer);
 // CALIBRATION //
 ////////////////
 
+extern int8_t calibration_step;
 extern mutex_t adc_mtx;
 
 // Calibration parameters

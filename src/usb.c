@@ -46,7 +46,7 @@ uint16_t tud_hid_get_report_cb(uint8_t instance, uint8_t report_id,
 
     switch (report_id) {
     case CMD_GET_CAL_STEP:
-        buffer[0] = _cfg_st.calibration_step;
+        buffer[0] = calibration_step;
         return 1;
     default:
         break;

@@ -76,7 +76,7 @@ void process_controller() {
     }
 #endif
 
-    if (_cfg_st.calibration_step > 0) {
+    if (calibration_step > 0) {
         // We have nothing to do. Calibration is handled through USB commands.
         // Just communicate default controller state.
         // In the future, if we want to allow controller buttons to advance/undo
