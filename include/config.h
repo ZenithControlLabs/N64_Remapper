@@ -100,8 +100,13 @@ void calibration_finish();
 // STATE HANDLING //
 ///////////////////
 
-uint16_t send_config_state(uint8_t report_id, uint8_t *buffer,
-                           uint16_t bufsize);
+// 256k from start of flash
+#define FLASH_OFFSET (256 * 1024)
+
+// Commenting out until needed again
+// Non-setting GET reports can probably go through usb.c
+// uint16_t send_config_state(uint8_t report_id, uint8_t *buffer,
+//                           uint16_t bufsize);
 
 void commit_config_state();
 

@@ -27,9 +27,17 @@ void set_setting(setting_id_t st, const uint8_t *buffer) {
 }
 
 uint16_t get_setting(setting_id_t st, uint8_t *buffer) {
-    // no settings implemented here at the moment (#4)
-    uint16_t sz = 0;
-    return sz;
+    if (st <= NOTCH_DOWNRIGHT) {
+        buffer[0] = _cfg_st.stick_config.notch_points_x[st];
+        buffer[1] = _cfg_st.stick_config.notch_points_y[st];
+        return 2;
+    }
+    switch (st) {
+    case DEBUG_REPORTING:
+        buffer[0] = _cfg_st.report_dbg;
+        return 1;
+    }
+    return 0;
 }
 
 //////////////////
@@ -147,11 +155,9 @@ void calibration_finish() {
 // STATE HANDLING //
 ///////////////////
 
-uint16_t send_config_state(uint8_t report_id, uint8_t *buffer,
-                           uint16_t bufsize) {}
+// uint16_t send_config_state(uint8_t report_id, uint8_t *buffer,
+//                           uint16_t bufsize) {}
 
-// 256k from start of flash
-#define FLASH_OFFSET (256 * 1024)
 void __not_in_flash_func(commit_config_state)() {
     uint8_t settings_buf[FLASH_SECTOR_SIZE];
 

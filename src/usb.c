@@ -41,6 +41,8 @@ uint16_t tud_hid_get_report_cb(uint8_t instance, uint8_t report_id,
                                hid_report_type_t report_type, uint8_t *buffer,
                                uint16_t bufsize) {
     (void)report_type;
+    // All of the commands need +1 buffer size because the report
+    // takes up 1 byte.
 
     switch (report_id) {
     case CMD_GET_CAL_STEP:
