@@ -29,7 +29,6 @@ void tud_resume_cb(void) { return; }
 void tud_hid_report_complete_cb(uint8_t instance, uint8_t const *report,
                                 uint16_t len) {
     (void)instance;
-    (void)report;
     (void)len;
 
     return;
@@ -41,10 +40,26 @@ void tud_hid_report_complete_cb(uint8_t instance, uint8_t const *report,
 uint16_t tud_hid_get_report_cb(uint8_t instance, uint8_t report_id,
                                hid_report_type_t report_type, uint8_t *buffer,
                                uint16_t bufsize) {
-    // TODO not Implemented
     (void)report_type;
+    // All of the commands need +1 buffer size because the report
+    // takes up 1 byte.
 
-    return send_config_state(report_id, buffer, bufsize);
+    switch (report_id) {
+    case CMD_GET_CAL_STEP:
+        buffer[0] = calibration_step;
+        return 1;
+    default:
+        break;
+    }
+
+    // None of the commands have matched. Check if we are in the settings
+    // report ID range. If not, this isn't a valid report ID.
+
+    if (report_id < CMD_SETTING_BASE) {
+        return 0;
+    }
+
+    return get_setting(report_id - CMD_SETTING_BASE, buffer);
 }
 
 void tud_hid_set_report_cb(uint8_t instance, uint8_t report_id,
@@ -58,21 +73,28 @@ void tud_hid_set_report_cb(uint8_t instance, uint8_t report_id,
     switch (report_id) {
     case CMD_START_CALIBRATION:
         calibration_start();
-        break;
+        return;
     case CMD_INC_CAL_STEP:
         calibration_advance();
-        break;
+        return;
     case CMD_DEC_CAL_STEP:
         calibration_undo();
-        break;
+        return;
     case CMD_COMMIT_SETTINGS:
-        _pleaseCommit = true;
+        _please_commit = true;
+        return;
+    default:
         break;
-    case CMD_SET_NOTCH_VALUE:
+    }
+
+    // None of the commands have matched. Check if we are in the settings
+    // report ID range. If not, this isn't a valid report ID.
+
+    if (report_id < CMD_SETTING_BASE) {
         return;
     }
 
-    return;
+    set_setting(report_id - CMD_SETTING_BASE, buffer);
 }
 
 hid_gamepad_report_t convertN64toHIDReport() {
@@ -107,43 +129,40 @@ hid_gamepad_report_t convertN64toHIDReport() {
 // USB HID
 //--------------------------------------------------------------------+
 
+// This method will send the next hid report.
+// The way our reports are structured is the following:
+// - If the user has enabled debug reporting, we alternate
+//   between a debug and normal report every 5ms.
+// - If they have not, then we still run this every 5ms,
+//   but we simply do nothing when we'd normally send debug,
+//   meaning we send standard reports every 10ms.
 static void send_hid_report() {
-    static bool which = false;
+    // Keep track of whether or not we are sending a debug report next
+    static bool debug_next = false;
     // skip if hid is not ready yet
     if (!tud_hid_ready())
         return;
-
-    hid_gamepad_report_t report = convertN64toHIDReport();
-#ifdef DEBUG
-    // we don't care that much about locking for debug reports.
-    if (which)
-        tud_hid_report(0x5, &_dbg_report, sizeof(report));
-    else
-        tud_hid_report(REPORT_ID_GAMEPAD, &report, sizeof(report));
-    which = !which;
-#else
-    tud_hid_report(REPORT_ID_GAMEPAD, &report, sizeof(report));
-#endif
+    if (debug_next) {
+        if (_cfg_st.report_dbg) {
+            // we don't care that much about locking for debug reports.
+            tud_hid_report(REPORT_ID_DEBUG, &_raw,
+                           sizeof(hid_gamepad_report_t));
+        }
+        // otherwise, dont do anything. we just wait out the 5ms
+    } else {
+        hid_gamepad_report_t report = convertN64toHIDReport();
+        tud_hid_report(REPORT_ID_GAMEPAD, &report,
+                       sizeof(hid_gamepad_report_t));
+    }
+    debug_next = !debug_next;
 }
 
-uint16_t send_custom_report(uint8_t cmd) {
-    // if hid is not ready yet let the consumer know
-    if (!tud_hid_ready())
-        return -1;
-
-    tud_hid_report(cmd, NULL, 0);
-}
-
-// Every 10ms, we will sent 1 report for each HID profile (keyboard, mouse etc
-// ..) tud_hid_report_complete_cb() is used to send the next report after
-// previous one is complete
+// We run the hid_report task every 5ms,
+// but we only send a report every 5ms if debugging is enabled.
+// See send_hid_report()'s comment for more detail.
 void hid_task(void) {
-// Poll every 10ms
-#ifdef DEBUG
+    // Poll every 5ms
     const uint32_t interval_ms = 5;
-#else
-    const uint32_t interval_ms = 10;
-#endif
     static uint32_t start_ms = 0;
 
     if (to_ms_since_boot(get_absolute_time()) - start_ms < interval_ms)

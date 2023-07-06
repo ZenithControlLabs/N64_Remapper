@@ -68,6 +68,9 @@ target_link_libraries(Phobri64
 
 add_compile_options(-finline-functions)
 
-add_compile_definitions(DEBUG)
+# Enable debugging features when running debug builds
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+    add_compile_definitions(DEBUG)
+endif()
 
 pico_add_extra_outputs(Phobri64)
