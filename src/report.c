@@ -1,4 +1,4 @@
-#include "Phobri64.h"
+#include "main.h"
 
 // The raw stick is global so it can be reported thru USB
 // as a debugging feature.
@@ -30,27 +30,6 @@ void create_default_n64_report(void) {
     };
 }
 
-void update_n64_report(const buttons_t *btn, processed_stick_t *stick_out) {
-    mutex_enter_blocking(&_report_lock);
-    _report = (n64_report_t){.dpad_right = btn->dpad_right,
-                             .dpad_left = btn->dpad_left,
-                             .dpad_down = btn->dpad_down,
-                             .dpad_up = btn->dpad_up,
-                             .start = btn->start,
-                             .z = btn->zl,
-                             .b = btn->b,
-                             .a = btn->a,
-                             .c_right = btn->c_right,
-                             .c_left = btn->c_left,
-                             .c_up = btn->c_up,
-                             .c_down = btn->c_down,
-                             .r = btn->r,
-                             .l = btn->l,
-                             .stick_x = stick_out->x,
-                             .stick_y = stick_out->y};
-    mutex_exit(&_report_lock);
-}
-
 // If this function sounds incredibly generic, it's because it is. It's the main
 // loop body in our core1.
 //
@@ -58,23 +37,11 @@ void update_n64_report(const buttons_t *btn, processed_stick_t *stick_out) {
 // stick data using our calibration steps.
 void process_controller() {
 
-    // always start out the loop doing our multisample ADC read.
-    // the only situation that could cause problems is when we're
-    // calibrating and the other core is trying to read the ADC.
-    // we don't want them to both read, so we wrap them in a critical section.
     mutex_enter_blocking(&adc_mtx);
-    _raw = read_stick_multisample();
+    n64_report_t raw_report = read_hardware();
+    _raw.stick_x_raw = (float)raw_report.stick_x;
+    _raw.stick_y_raw = (float)raw_report.stick_y;
     mutex_exit(&adc_mtx);
-
-    buttons_t btn = read_buttons();
-
-#ifdef DEBUG
-    // command to reset the controller without having to replug usb, for
-    // debugging purposes
-    if (btn.l & btn.zl & btn.r) {
-        reset_usb_boot(0, 0);
-    }
-#endif
 
     if (calibration_step > 0) {
         // We have nothing to do. Calibration is handled through USB commands.
@@ -86,6 +53,10 @@ void process_controller() {
     } else {
         processed_stick_t stick_out;
         process_stick(&_raw, &(_cfg_st.calib_results), &stick_out);
-        update_n64_report(&btn, &stick_out);
+        raw_report.stick_x = stick_out.x;
+        raw_report.stick_y = stick_out.y;
+        mutex_enter_blocking(&_report_lock);
+        memcpy(&_report, &raw_report, sizeof(n64_report_t));
+        mutex_enter_blocking(&_report_lock);
     }
 }

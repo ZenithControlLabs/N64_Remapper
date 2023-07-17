@@ -1,4 +1,4 @@
-#include "Phobri64.h"
+#include "main.h"
 
 config_state_t _cfg_st;
 
@@ -74,12 +74,13 @@ void calibration_advance() {
     // Hold the ADC mutex in this time
     mutex_enter_blocking(&adc_mtx);
     for (int i = 0; i < CALIBRATION_NUM_SAMPLES; i++) {
-        x += read_ext_adc(XAXIS);
-        y += read_ext_adc(YAXIS);
+        n64_report_t raw_report = read_hardware();
+        x += raw_report.stick_x;
+        y += raw_report.stick_y;
     }
     mutex_exit(&adc_mtx);
-    float xf = (float)x / ((float)(ADC_MAX * CALIBRATION_NUM_SAMPLES));
-    float yf = (float)y / ((float)(ADC_MAX * CALIBRATION_NUM_SAMPLES));
+    float xf = (float)x / ((float)(CALIBRATION_NUM_SAMPLES));
+    float yf = (float)y / ((float)(CALIBRATION_NUM_SAMPLES));
 
     raw_cal_points_x[calibration_step - 1] = xf;
     raw_cal_points_y[calibration_step - 1] = yf;

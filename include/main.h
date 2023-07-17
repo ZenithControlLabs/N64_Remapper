@@ -1,5 +1,5 @@
-#ifndef PHOBRI64_H_
-#define PHOBRI64_H_
+#ifndef MAIN_H_
+#define MAIN_H_
 
 //////////////////////
 // System includes //
@@ -27,13 +27,14 @@
 ///////////////////
 // this one needs to go first to avoid compile errors
 #include "stick.h" // Where all the stick math lives.
+
+#include "report.h" // Responsible for reporting out the hardware, from stick to N64 report data structure.
 // and this second
-#include "read_hardware.h" // Interfacing with the hardware on board (ADCs, GPIO)
+#include "joybus.h" // Handle joybus comms. Take in a controller report structure as input.
 
 #include "config.h" // Everything related to the config of the stick. Calibration procedure, settings, etc.
-#include "joybus.h" // Handle joybus comms. Take in a controller report structure as input.
-#include "report.h" // Responsible for reporting out the hardware, from stick to N64 report data structure.
-#include "usb.h"    // Handle USB communication with host PC.
+#include "read_hardware.h" // Interfacing with the hardware on board (ADCs, GPIO)
+#include "usb.h"           // Handle USB communication with host PC.
 
 // This was planned but to keep things simple for now the
 // flash storage fns are called in control.c in the commit_settings function.
@@ -41,7 +42,7 @@
 
 // Hardware include - uncomment these based on the RP2040 board you are using!
 // #include "hw/phob2_debug.h"
-#include "hw/phobri_proto.h"
+#include "hw/pico_remapper.h"
 
 // Core 1 doesn't like to be interrupted with multicore_lockout_blocking for
 // some reason, even when it calls multicore_lockout_victim_init(). So, when we
@@ -58,4 +59,4 @@ extern bool _please_commit;
 #define debug_print(fmt, args...)
 #endif
 
-#endif /* PHOBRI64_H_ */
+#endif /* MAIN_H_ */

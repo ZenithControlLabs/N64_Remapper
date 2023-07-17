@@ -14,7 +14,7 @@ if (PICO_SDK_VERSION_STRING VERSION_LESS "1.4.0")
   message(FATAL_ERROR "Raspberry Pi Pico SDK version 1.4.0 (or later) required. Your version is ${PICO_SDK_VERSION_STRING}")
 endif()
 
-project(Phobri64 C CXX ASM)
+project(N64_Remapper C CXX ASM)
 
 # Initialise the Raspberry Pi Pico SDK
 pico_sdk_init()
@@ -22,8 +22,8 @@ pico_sdk_init()
 
 # Add executable. Default name is the project name, version 0.1
 
-add_executable(Phobri64 
-  src/Phobri64.c
+add_executable(N64_Remapper 
+  src/main.c
   src/joybus.c 
   src/report.c
   src/usb.c
@@ -34,10 +34,10 @@ add_executable(Phobri64
   src/polyfit.c
 )
 
-pico_generate_pio_header(Phobri64 ${CMAKE_CURRENT_LIST_DIR}/src/joybus.pio)
+pico_generate_pio_header(N64_Remapper ${CMAKE_CURRENT_LIST_DIR}/src/joybus.pio)
 
-pico_set_program_name(Phobri64 "Phobri64")
-pico_set_program_version(Phobri64 "0.1")
+pico_set_program_name(N64_Remapper "N64_Remapper")
+pico_set_program_version(N64_Remapper "0.1")
 
 add_custom_command(OUTPUT ${CMAKE_CURRENT_LIST_DIR}/generated/joybus.pio.h
 	DEPENDS ${CMAKE_CURRENT_LIST_DIR}/joybus.pio
@@ -45,7 +45,7 @@ add_custom_command(OUTPUT ${CMAKE_CURRENT_LIST_DIR}/generated/joybus.pio.h
 	)
 
 # Add the standard library to the build
-target_link_libraries(Phobri64
+target_link_libraries(N64_Remapper
         pico_stdlib
         pico_bootrom
         pico_multicore
@@ -56,14 +56,14 @@ target_link_libraries(Phobri64
         tinyusb_board)
 
 # Add the standard include files to the build
-target_include_directories(Phobri64 PRIVATE
+target_include_directories(N64_Remapper PRIVATE
   ${CMAKE_CURRENT_LIST_DIR}
   ${CMAKE_CURRENT_LIST_DIR}/include
   ${CMAKE_CURRENT_LIST_DIR}/.. # for our common lwipopts or any other standard includes, if required
 )
 
 # Add any user requested libraries
-target_link_libraries(Phobri64
+target_link_libraries(N64_Remapper
         )
 
 add_compile_options(-finline-functions)
@@ -73,4 +73,4 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     add_compile_definitions(DEBUG)
 endif()
 
-pico_add_extra_outputs(Phobri64)
+pico_add_extra_outputs(N64_Remapper)

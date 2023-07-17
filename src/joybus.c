@@ -1,4 +1,4 @@
-#include "Phobri64.h"
+#include "main.h"
 
 joybus_port_t port;
 
@@ -106,7 +106,7 @@ uint joybus_port_init(joybus_port_t *port, uint pin, PIO pio, int sm,
 
 void joybus_init_comms(void) {
     // We are just going to claim PIO0
-    joybus_port_init(&port, JOYBUS_PIN, pio0, -1, -1);
+    joybus_port_init(&port, JOYBUS_CONS, pio0, -1, -1);
     irq_set_enabled(
         PIO0_IRQ_0,
         true); // we want to be interrupted as soon as new byte is ready

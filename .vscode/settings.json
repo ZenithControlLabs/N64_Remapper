@@ -19,7 +19,7 @@
     "stdlib.h": "c",
     "joybus.h": "c",
     "n64_definitions.h": "c",
-    "phobri64.h": "c",
+    "main.h": "c",
     "multicore.h": "c",
     "report.h": "c",
     "tusb.h": "c",
@@ -47,7 +47,8 @@
     "regex": "c",
     "dynamic_bitset": "c",
     "utility": "c",
-    "valarray": "c"
+    "valarray": "c",
+    "cstddef": "c"
   },
   "editor.formatOnSave": true,
 }

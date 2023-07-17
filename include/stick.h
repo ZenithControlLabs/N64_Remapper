@@ -1,7 +1,7 @@
 #ifndef _STICK_H
 #define _STICK_H
 
-#include "Phobri64.h"
+#include "main.h"
 
 #define NUM_NOTCHES 8
 #define FIT_ORDER 3

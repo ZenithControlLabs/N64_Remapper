@@ -1,7 +1,7 @@
 #ifndef _CONFIG_H
 #define _CONFIG_H
 
-#include "Phobri64.h"
+#include "main.h"
 
 //////////////////////////
 // USB CONFIG COMMANDS //
@@ -86,7 +86,7 @@ extern int8_t calibration_step;
 extern mutex_t adc_mtx;
 
 // Calibration parameters
-#define CALIBRATION_NUM_SAMPLES 128
+#define CALIBRATION_NUM_SAMPLES 4
 #define CALIBRATION_NUM_STEPS NUM_NOTCHES * 2
 
 void calibration_start();

@@ -1,11 +1,16 @@
-#include "Phobri64.h"
+#include "main.h"
 
 bool _please_commit = false;
 
 void second_core() {
     create_default_n64_report();
 
-    debug_print("Phobri64 Initialization\n");
+    debug_print("N64 remapper Initialization\n");
+
+    init_hardware();
+
+    debug_print("Successfully initialized joystick\n");
+
     while (true) {
         if (_please_commit) {
             commit_config_state();
@@ -22,17 +27,9 @@ int main() {
 
     // Initialize all relevant hardware pins
     stdio_uart_init_full(uart0, 115200, DEBUG_TX_PIN, -1);
-    init_hardware();
 
     // Initialize report mutex before launching things on both cores
     mutex_init(&_report_lock);
-
-    // Startup checks
-    buttons_t btn = read_buttons();
-    // reboot in BOOTSEL mode if start is held
-    if (btn.start) {
-        reset_usb_boot(0, 0);
-    }
 
     // Initialize config state (load stuff from flash)
     init_config_state();

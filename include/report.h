@@ -1,7 +1,7 @@
 #ifndef REPORT_H_
 #define REPORT_H_
 
-#include "Phobri64.h"
+#include "main.h"
 
 extern raw_stick_t _raw;
 
@@ -32,8 +32,6 @@ extern n64_report_t _report;
 extern mutex_t _report_lock;
 
 void create_default_n64_report(void);
-
-void update_n64_report(const buttons_t *btn, processed_stick_t *stick_out);
 
 void process_controller();
 
