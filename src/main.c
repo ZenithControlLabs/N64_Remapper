@@ -18,6 +18,8 @@ void second_core() {
         }
 
         process_controller();
+
+        sleep_ms(1);
     }
 }
 

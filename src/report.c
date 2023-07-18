@@ -37,12 +37,6 @@ void create_default_n64_report(void) {
 // stick data using our calibration steps.
 void process_controller() {
 
-    mutex_enter_blocking(&adc_mtx);
-    n64_report_t raw_report = read_hardware();
-    _raw.stick_x_raw = (float)raw_report.stick_x;
-    _raw.stick_y_raw = (float)raw_report.stick_y;
-    mutex_exit(&adc_mtx);
-
     if (calibration_step > 0) {
         // We have nothing to do. Calibration is handled through USB commands.
         // Just communicate default controller state.
@@ -51,12 +45,17 @@ void process_controller() {
         // calibration_advance/calibration_undo here.
         create_default_n64_report();
     } else {
+        mutex_enter_blocking(&adc_mtx);
+        n64_report_t raw_report = read_hardware();
+        _raw.stick_x_raw = ((float)raw_report.stick_x + 128.0) / 256.0;
+        _raw.stick_y_raw = ((float)raw_report.stick_y + 128.0) / 256.0;
+        mutex_exit(&adc_mtx);
         processed_stick_t stick_out;
         process_stick(&_raw, &(_cfg_st.calib_results), &stick_out);
         raw_report.stick_x = stick_out.x;
         raw_report.stick_y = stick_out.y;
         mutex_enter_blocking(&_report_lock);
         memcpy(&_report, &raw_report, sizeof(n64_report_t));
-        mutex_enter_blocking(&_report_lock);
+        mutex_exit(&_report_lock);
     }
 }

@@ -72,15 +72,19 @@ void calibration_advance() {
     // Taking average of readings over CALIBRATION_NUM_SAMPLES number of
     // samples.
     // Hold the ADC mutex in this time
+    printf("whats the matter bud?\n");
     mutex_enter_blocking(&adc_mtx);
+    printf("cant lock?\n");
     for (int i = 0; i < CALIBRATION_NUM_SAMPLES; i++) {
         n64_report_t raw_report = read_hardware();
-        x += raw_report.stick_x;
-        y += raw_report.stick_y;
+        printf("i see the problem\n");
+        x += (raw_report.stick_x + 128);
+        y += (raw_report.stick_y + 128);
     }
     mutex_exit(&adc_mtx);
-    float xf = (float)x / ((float)(CALIBRATION_NUM_SAMPLES));
-    float yf = (float)y / ((float)(CALIBRATION_NUM_SAMPLES));
+    printf("?\n");
+    float xf = (float)x / ((float)(CALIBRATION_NUM_SAMPLES * 256));
+    float yf = (float)y / ((float)(CALIBRATION_NUM_SAMPLES * 256));
 
     raw_cal_points_x[calibration_step - 1] = xf;
     raw_cal_points_y[calibration_step - 1] = yf;

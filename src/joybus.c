@@ -98,8 +98,8 @@ uint joybus_port_init(joybus_port_t *port, uint pin, PIO pio, int sm,
     port->offset = offset;
     port->config = joybus_program_get_config(pio, sm, offset, pin);
 
-    joybus_program_receive_init(port->pio, port->sm, port->offset, port->pin,
-                                &port->config);
+    joybus_program_send_init(port->pio, port->sm, port->offset, port->pin,
+                             &port->config);
 
     return offset;
 }
