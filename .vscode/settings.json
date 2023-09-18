@@ -48,7 +48,10 @@
     "dynamic_bitset": "c",
     "utility": "c",
     "valarray": "c",
-    "cstddef": "c"
+    "cstddef": "c",
+    "joybus_cons.h": "c",
+    "n64.h": "c",
+    "interval.h": "c"
   },
   "editor.formatOnSave": true,
 }

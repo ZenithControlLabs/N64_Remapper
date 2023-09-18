@@ -1,13 +1,40 @@
-#include "main.h"
+#include "joybus_cons.h"
+#include "joybus.pio.h"
+#include <stdio.h>
 
 joybus_port_t cntlr_port;
 
-void init_hardware() {
+uint joybus_cons_port_init(joybus_port_t *port, uint pin, PIO pio, int sm,
+                           int offset) {
+    if (sm < 0) {
+        sm = pio_claim_unused_sm(pio, true);
+    } else {
+        pio_sm_claim(pio, sm);
+    }
+
+    if (offset < 0) {
+        offset = pio_add_program(pio, &joybus_program);
+    }
+
+    port->pin = pin;
+    port->pio = pio;
+    port->sm = sm;
+    port->offset = offset;
+    port->config = joybus_program_get_config(pio, sm, offset, pin);
+
+    joybus_program_send_init(port->pio, port->sm, port->offset, port->pin,
+                             &port->config);
+
+    return offset;
+}
+
+void init_joybus() {
     // We are just going to claim PIO1
-    joybus_port_init(&cntlr_port, JOYBUS_CTLR, pio1, -1, -1);
+    joybus_cons_port_init(&cntlr_port, JOYBUS_CTLR, pio1, -1, -1);
 
     // Send status byte
     uint32_t data_shifted = (PROBE << 24) | (1 << 23);
+    printf("putting %d\n", data_shifted);
     pio_sm_put_blocking((&cntlr_port)->pio, (&cntlr_port)->sm, data_shifted);
 
     int byte_cnt = 0;
@@ -16,6 +43,8 @@ void init_hardware() {
         byte_cnt++;
     }
 
+    printf("Advancing?\n");
+
     joybus_program_send_init((&cntlr_port)->pio, (&cntlr_port)->sm,
                              (&cntlr_port)->offset, (&cntlr_port)->pin,
                              &(&cntlr_port)->config);
@@ -23,7 +52,7 @@ void init_hardware() {
     return;
 }
 
-n64_report_t read_hardware() {
+uint32_t read_joybus_ctlr() {
     uint32_t data_shifted = (POLL << 24) | (1 << 23);
     pio_sm_put_blocking((&cntlr_port)->pio, (&cntlr_port)->sm, data_shifted);
 
@@ -44,5 +73,5 @@ n64_report_t read_hardware() {
                              (&cntlr_port)->offset, (&cntlr_port)->pin,
                              &(&cntlr_port)->config);
 
-    return (*((n64_report_t *)&ctlr_word));
+    return ctlr_word;
 }
