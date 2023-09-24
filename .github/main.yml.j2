@@ -16,8 +16,8 @@ permissions:
 
 jobs:
 
-
-  build-pico:  
+{% for config in buildconfigs %}
+  build-{{config.name}}:  
     runs-on: ubuntu-latest
     container: xingrz/rpi-pico-builder:latest
     steps:
@@ -48,30 +48,30 @@ jobs:
 
     - name: Untar Pico SDK
       run: |
-        tar xvf assets/${{ steps.pico-sdk.outputs.filename }} --transform 's/pico-sdk-1.5.1//' -C $PICO_SDK_PATH
-        tar xvf assets/${{ steps.tinyusb.outputs.filename }} --transform 's/tinyusb-0.15.0//' -C $PICO_SDK_PATH/lib/tinyusb
+        tar xvf assets/{% raw %}${{ steps.pico-sdk.outputs.filename }}{% endraw %} --transform 's/pico-sdk-1.5.1//' -C $PICO_SDK_PATH
+        tar xvf assets/{% raw %}${{ steps.tinyusb.outputs.filename }}{% endraw %} --transform 's/tinyusb-0.15.0//' -C $PICO_SDK_PATH/lib/tinyusb
 
     - name: Configure CMake
-      run: cmake -B build 
+      run: cmake -B build {{config.cmake_opts}}
 
     - name: Build
       # Build your program with the given configuration
       run: cmake --build build
 
-    - name: Upload pico UF2
+    - name: Upload {{config.name}} UF2
       uses: actions/upload-artifact@v3
       with:
-        name: pico_uf2
+        name: {{config.name}}_uf2
         path: build/N64_Remapper.uf2
         if-no-files-found: error
-
+{% endfor %}
 
   deploy:
     runs-on: ubuntu-latest
     needs:
-
-      - build-pico
-
+{% for config in buildconfigs %}
+      - build-{{config.name}}
+{% endfor %}
     if: startsWith(github.ref, 'refs/tags/')
     steps:
       - uses: actions/checkout@v3
@@ -82,14 +82,15 @@ jobs:
 
       - name: Move around files
         run: |
-        
-          mv pico_uf2/N64_Remapper.uf2 ./N64_Remapper_${{ github.ref_name }}_pico.uf2
-        
+        {% for config in buildconfigs %}
+          mv {{config.name}}_uf2/N64_Remapper.uf2 ./N64_Remapper_{% raw %}${{ github.ref_name }}{% endraw %}_{{config.name}}.uf2
+        {% endfor %}
 
       - name: Push to release
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/')
         with:
             files: |
-              N64_Remapper_${{ github.ref_name }}_pico.uf2
-              
+              {% for config in buildconfigs -%}
+              N64_Remapper_{% raw %}${{ github.ref_name }}{% endraw %}_{{config.name}}.uf2
+              {% endfor %}

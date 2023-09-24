@@ -26,7 +26,6 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -mcpu=cortex-m0")
 target_compile_definitions(${PROJECT_NAME}
 	PRIVATE
 	PICO_XOSC_STARTUP_DELAY_MULTIPLIER=64
-	# todo: need a way to set this uart tx thing that is compatible with proto & v1.X
 	#PICO_DEFAULT_BOOT_STAGE2=boot2_generic_03h
 	#PICO_FLASH_SPI_CLKDIV=8
 )
@@ -61,8 +60,5 @@ hardware_watchdog
 tinyusb_device
 tinyusb_board
 )
-
-pico_enable_stdio_usb(${PROJECT_NAME} 0)
-pico_enable_stdio_uart(${PROJECT_NAME} 1)
 
 pico_add_extra_outputs(${PROJECT_NAME})
