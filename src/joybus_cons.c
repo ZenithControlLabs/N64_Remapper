@@ -1,5 +1,6 @@
 #include "joybus_cons.h"
 #include "joybus.pio.h"
+#include <pico/time.h>
 #include <stdio.h>
 
 joybus_port_t cntlr_port;
@@ -31,19 +32,32 @@ uint joybus_cons_port_init(joybus_port_t *port, uint pin, PIO pio, int sm,
 void init_joybus() {
     // We are just going to claim PIO1
     joybus_cons_port_init(&cntlr_port, JOYBUS_CTLR, pio1, -1, -1);
+    gpio_pull_up(JOYBUS_CTLR);
 
     // Send status byte
     uint32_t data_shifted = (PROBE << 24) | (1 << 23);
-    printf("putting %d\n", data_shifted);
-    pio_sm_put_blocking((&cntlr_port)->pio, (&cntlr_port)->sm, data_shifted);
+    // printf("putting %d\n", data_shifted);
 
-    int byte_cnt = 0;
-    while (byte_cnt < 3) {
-        uint32_t d = pio_sm_get_blocking((&cntlr_port)->pio, (&cntlr_port)->sm);
-        byte_cnt++;
+    bool got_response = false;
+    while (!got_response) {
+        pio_sm_put_blocking((&cntlr_port)->pio, (&cntlr_port)->sm,
+                            data_shifted);
+        sleep_us(50);
+        if (pio_sm_is_rx_fifo_empty((&cntlr_port)->pio, (&cntlr_port)->sm)) {
+            sleep_ms(1);
+            joybus_program_send_init((&cntlr_port)->pio, (&cntlr_port)->sm,
+                                     (&cntlr_port)->offset, (&cntlr_port)->pin,
+                                     &(&cntlr_port)->config);
+            continue;
+        }
+        int byte_cnt = 0;
+        while (byte_cnt < 3) {
+            uint32_t d =
+                pio_sm_get_blocking((&cntlr_port)->pio, (&cntlr_port)->sm);
+            byte_cnt++;
+        }
+        got_response = true;
     }
-
-    printf("Advancing?\n");
 
     joybus_program_send_init((&cntlr_port)->pio, (&cntlr_port)->sm,
                              (&cntlr_port)->offset, (&cntlr_port)->pin,

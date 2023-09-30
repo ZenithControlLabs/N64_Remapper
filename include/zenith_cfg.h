@@ -9,4 +9,12 @@
 
 #define ZENITH_SERIAL_PIN 11
 
+#define ZTH_SEPARATE_CAL_READ 1
+
+#define ZTH_N64_REMAP_DEFAULT                                                  \
+    {                                                                          \
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0xFF, 0xFF, 0xFF, 0xFF,      \
+            0xFF, 0xFF, 0xFF, 0xFF, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0               \
+    }
+
 #endif // ZENITH_CFG_H
