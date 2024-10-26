@@ -40,7 +40,7 @@ TODO: Not a part of the guide, but for those reading that are knowledgable, shou
 For now, leave the console connection unplugged. The Pico does not need to be powered by the console, since you will flash and configure it using your PC (USB-powered.)
 However, do leave your controller plugged in.
 
-Hold the white BOOTSEL button on the Pico while plugging in the USB to your computer. You will see a flash drive pop up. Drag and drop a UF2 file from the [Releases](https://github.com/ZenithControlLabs/N64_Remapper/releases) page (if in doubt, just use the latest) onto the flash drive.
+Hold the white BOOTSEL button on the Pico while plugging in the USB to your computer. You will see a flash drive pop up, it should be labeled RPI-RP2. Download the UF2 file starting with N64_Remapper from the [Releases](https://github.com/ZenithControlLabs/Zenith_FW/releases) page of the Zenith_FW repo where the firmware is hosted. If in doubt, just use the latest. Then, drag and drop the UF2 onto the flash drive.
 
 # Using
 
@@ -54,7 +54,7 @@ If you're on Linux, install the [udev rules](doc/10-zcl.rules) in this repo to `
 
 Once you've flashed the Pico, with the USB and your controller still plugged in,  you should see a popup from Chrome indicating the controller was connected. Click on it.
 
-![](image.png)
+![](doc/remapper_detected.png)
 
 (Of course, Chrome has to be open for this to pop up.)
 
@@ -77,7 +77,7 @@ Once you're satisfied with the values from your calibration, make sure to hit "S
 There is a good chance it will not work. I have not tested this on a wide range of controllers. There also might be some finnicky behavior with replugging controllers/initializing them. Some things to try:
 
 * If you just didn't see the popup from earlier, check in Device Manager (Windows)/lsusb (Linux) that you see the N64 Remapper device. If you don't see it, it hasn't succesfully initialized controller comms. Keep going down the list
-    * If it's there, just open the link from earlier anyway: https://zenithcontrollabs.github.io/N64_Remapper_GUI/
+    * If it's there, just open the link from earlier anyway: https://zenithcontrollabs.github.io/Zenith_FW/web/platforms/remapper
 * Try replugging the USB
 * Try replugging your controller
 * Verify your pinout from earlier
