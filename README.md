@@ -83,3 +83,5 @@ There is a good chance it will not work. I have not tested this on a wide range 
 * Verify your pinout from earlier
 * If it was working in USB, but not on the console, let make a post in #user-tech-support in the Discord indicating this
 * Anything else, just make a post in #user-tech-support in the Discord
+
+Discord server: https://discord.gg/pXuuHDnCx4
